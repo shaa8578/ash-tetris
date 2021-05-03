@@ -5,6 +5,7 @@
 #include <cstring>
 #include <stdexcept>
 
+#include "figures/line.h"
 #include "figures/square.h"
 
 //------------------------------------------------------------------------------
@@ -54,7 +55,8 @@ int GamePlay::exec() {
   tetris::Point caret = {0, 10};
   int input_symbol;
 
-  m_current_figure.reset(new tetris::Square);
+  //  m_current_figure.reset(new tetris::Square);
+  m_current_figure.reset(new tetris::Line);
 
   while (m_working) {
     input_symbol = getch();
@@ -83,14 +85,17 @@ int GamePlay::exec() {
       case KEY_D_BIG:
       case KEY_D_LITTLE:
       case KEY_RIGHT:
-        if (caret.col + m_current_figure->width() < m_clientRange.colRight) {
+        if (m_current_figure->rangeRight(caret.col) < m_clientRange.colRight) {
           caret.col++;
           m_current_figure->draw(caret);
           m_current_figure->clearTrail(caret, tetris::Figure::RIGHT);
         }
         break;
       case KEY_SPACE:
-        m_current_figure->rotate(caret);
+        if (m_current_figure->rangeRightRotated(caret.col - 1) <
+            m_clientRange.colRight) {
+          m_current_figure->rotate(caret);
+        }
         break;
     }
   }
