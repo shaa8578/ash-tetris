@@ -38,15 +38,20 @@ find_package(Curses REQUIRED)
 set(SOURCES_FILES
   src/main.cpp
   src/game_play.cpp
+  src/figure.cpp
   src/figures/square.cpp
   src/figures/line.cpp
+  src/figures/n_figure.cpp
+  src/figures/u_figure.cpp
 )
 
 set(HEADERS_FILES
   src/game_play.h
-  src/figure.hpp
+  src/figure.h
   src/figures/square.h
   src/figures/line.h
+  src/figures/n_figure.h
+  src/figures/u_figure.h
 )
 #-------------------------------------------------------------------------------
 set(PROJECT_LABEL ash-tetris)

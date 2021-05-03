@@ -1,8 +1,6 @@
 #pragma once
 
-#include <string>
-
-#include "figure.hpp"
+#include "figure.h"
 
 //------------------------------------------------------------------------------
 namespace tetris {
@@ -20,15 +18,12 @@ class Square : public Figure {
   inline virtual int rangeRightRotated(int currentCol) const override {
     return rangeRight(currentCol);
   }
-  virtual void draw(const Point& pivotPoint) override;
-  virtual void rotate(const Point& pivotPoint) override;
-  virtual void clearTrail(const Point& new_location,
-                          MoveDirection direction) override;
 
  protected:
+  virtual void draw(const Point& pivotPoint, char symbol) override;
+  virtual void rotateGeometry() override {}
+
   static int topRange(int row);
-  static void clearVerticalLine(int row, int col);
-  static void clearHorizontalLine(int row, int col);
 };
 
 //------------------------------------------------------------------------------

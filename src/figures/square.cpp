@@ -2,8 +2,11 @@
 
 #include <curses.h>
 
+#include <string>
+
 //------------------------------------------------------------------------------
-const tetris::Size tetris::Square::SQUARE_SIZE = {4, 4};
+const tetris::Size tetris::Square::SQUARE_SIZE = {2 * GLYPH_WIDTH,
+                                                  2 * GLYPH_HEIGHT};
 
 //------------------------------------------------------------------------------
 tetris::Square::Square() : Figure() {}
@@ -14,35 +17,11 @@ int tetris::Square::rangeRight(int currentCol) const {
 }
 
 //------------------------------------------------------------------------------
-void tetris::Square::draw(const tetris::Point& pivotPoint) {
-  if (pivotPoint.row < 0) return;
-
-  static const std::string fill_line(SQUARE_SIZE.width, FILL_SYMBOL);
+void tetris::Square::draw(const tetris::Point& pivotPoint, char symbol) {
+  const std::string line(SQUARE_SIZE.width, symbol);
   const int top = topRange(pivotPoint.row);
   for (int row_it(pivotPoint.row); row_it > top; --row_it) {
-    mvprintw(row_it, pivotPoint.col, fill_line.c_str());
-  }
-  refresh();
-}
-
-//------------------------------------------------------------------------------
-void tetris::Square::rotate(const tetris::Point& pivotPoint) {
-  draw(pivotPoint);
-}
-
-//------------------------------------------------------------------------------
-void tetris::Square::clearTrail(const tetris::Point& new_location,
-                                tetris::Figure::MoveDirection direction) {
-  switch (direction) {
-    case LEFT:
-      clearVerticalLine(new_location.row, rangeRight(new_location.col));
-      break;
-    case RIGHT:
-      clearVerticalLine(new_location.row, new_location.col - 1);
-      break;
-    case DOWN:
-      clearHorizontalLine(topRange(new_location.row), new_location.col);
-      break;
+    mvprintw(row_it, pivotPoint.col, line.c_str());
   }
 }
 
@@ -55,23 +34,4 @@ int tetris::Square::topRange(int row) {
   if (result < TOP_RANGE) result = TOP_RANGE;
 
   return result;
-}
-
-//------------------------------------------------------------------------------
-void tetris::Square::clearVerticalLine(int row, int col) {
-  const auto top = topRange(row);
-
-  for (int row_it(row); row_it > top; --row_it) {
-    mvaddch(row_it, col, EMPTY_SYMBOL);
-  }
-  refresh();
-}
-
-//------------------------------------------------------------------------------
-void tetris::Square::clearHorizontalLine(int row, int col) {
-  if (row < 0) return;
-
-  static const std::string clear_line(SQUARE_SIZE.width, EMPTY_SYMBOL);
-  mvprintw(row, col, clear_line.c_str());
-  refresh();
 }
