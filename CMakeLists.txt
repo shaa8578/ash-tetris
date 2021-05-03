@@ -41,6 +41,7 @@ set(SOURCES_FILES
   src/figure.cpp
   src/figures/square.cpp
   src/figures/line.cpp
+  src/figures/n_figure.cpp
 )
 
 set(HEADERS_FILES
@@ -48,6 +49,7 @@ set(HEADERS_FILES
   src/figure.h
   src/figures/square.h
   src/figures/line.h
+  src/figures/n_figure.h
 )
 #-------------------------------------------------------------------------------
 set(PROJECT_LABEL ash-tetris)
