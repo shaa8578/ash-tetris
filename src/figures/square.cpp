@@ -9,8 +9,8 @@ const tetris::Size tetris::Square::SQUARE_SIZE = {4, 4};
 tetris::Square::Square() : Figure() {}
 
 //------------------------------------------------------------------------------
-int tetris::Square::width() const {
-  return SQUARE_SIZE.width;
+int tetris::Square::rangeRight(int currentCol) const {
+  return currentCol + SQUARE_SIZE.width;
 }
 
 //------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ void tetris::Square::draw(const tetris::Point& pivotPoint) {
   if (pivotPoint.row < 0) return;
 
   static const std::string fill_line(SQUARE_SIZE.width, FILL_SYMBOL);
-  const int top = solveTopRange(pivotPoint.row);
+  const int top = topRange(pivotPoint.row);
   for (int row_it(pivotPoint.row); row_it > top; --row_it) {
     mvprintw(row_it, pivotPoint.col, fill_line.c_str());
   }
@@ -35,20 +35,19 @@ void tetris::Square::clearTrail(const tetris::Point& new_location,
                                 tetris::Figure::MoveDirection direction) {
   switch (direction) {
     case LEFT:
-      clearVerticalLine(new_location.row, new_location.col + SQUARE_SIZE.width);
+      clearVerticalLine(new_location.row, rangeRight(new_location.col));
       break;
     case RIGHT:
       clearVerticalLine(new_location.row, new_location.col - 1);
       break;
     case DOWN:
-      clearHorizontalLine(new_location.row - SQUARE_SIZE.height,
-                          new_location.col);
+      clearHorizontalLine(topRange(new_location.row), new_location.col);
       break;
   }
 }
 
 //------------------------------------------------------------------------------
-int tetris::Square::solveTopRange(int row) {
+int tetris::Square::topRange(int row) {
   auto result = row - SQUARE_SIZE.height;
 
   /** Верхняя граница отрисовки окна */
@@ -60,7 +59,7 @@ int tetris::Square::solveTopRange(int row) {
 
 //------------------------------------------------------------------------------
 void tetris::Square::clearVerticalLine(int row, int col) {
-  const auto top = solveTopRange(row);
+  const auto top = topRange(row);
 
   for (int row_it(row); row_it > top; --row_it) {
     mvaddch(row_it, col, EMPTY_SYMBOL);
