@@ -30,9 +30,11 @@ class NFigure : public Figure {
  protected:
   virtual void rotateGeometry() override;
   virtual void draw(const Point& pivotPoint, char symbol) override;
-  void drawHorizontal(const Point& pivotPoint, char symbol);
-  void drawVertiacl(const Point& pivotPoint, char symbol);
+  virtual void drawHorizontal(const Point& pivotPoint, char symbol);
+  virtual void drawVertical(const Point& pivotPoint, char symbol);
   int topRange(int row);
+
+  const Size* currentSize() const { return m_currentSize; }
 
  private:
   /** Направление отрисовки фигуры */

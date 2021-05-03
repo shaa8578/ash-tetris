@@ -58,7 +58,7 @@ void tetris::NFigure::draw(const tetris::Point& pivotPoint, const char symbol) {
       drawHorizontal(pivotPoint, symbol);
       break;
     case VERTICAL:
-      drawVertiacl(pivotPoint, symbol);
+      drawVertical(pivotPoint, symbol);
       break;
   }
 }
@@ -78,7 +78,7 @@ void tetris::NFigure::drawHorizontal(const tetris::Point& pivotPoint,
 }
 
 //------------------------------------------------------------------------------
-void tetris::NFigure::drawVertiacl(const tetris::Point& pivotPoint,
+void tetris::NFigure::drawVertical(const tetris::Point& pivotPoint,
                                    const char symbol) {
   const std::string line(m_currentSize->width / 2, symbol);
   auto& row(pivotPoint.row);

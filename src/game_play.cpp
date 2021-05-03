@@ -9,6 +9,7 @@
 #include "figures/line.h"
 #include "figures/n_figure.h"
 #include "figures/square.h"
+#include "figures/u_figure.h"
 
 //------------------------------------------------------------------------------
 GamePlay::GamePlay() : m_working(0x0), m_inited(false), m_hasToolbox(false) {
@@ -60,7 +61,8 @@ int GamePlay::exec() {
 
   //  m_current_figure.reset(new tetris::Square);
   //  m_current_figure.reset(new tetris::Line);
-  m_current_figure.reset(new tetris::NFigure);
+  //  m_current_figure.reset(new tetris::NFigure);
+  m_current_figure.reset(new tetris::UFigure);
 
   while (m_working) {
     m_current_figure->clear(prev_caret);
