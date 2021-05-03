@@ -31,9 +31,16 @@ class Figure {
     DOWN   /**< Перемещение вниз */
   };
 
+  /** Ориентация фигуры */
+  enum Orientation {
+    HORIZONTAL, /**< Горизонтальная отрисовка фигуры */
+    VERTICAL /**< Вертикальная отрисовка фигуры */
+  };
+
   virtual ~Figure() = default;
 
-  virtual int width() const = 0;
+  virtual int rangeRight(int currentCol) const = 0;
+  virtual int rangeRightRotated(int currentCol) const = 0;
   virtual void draw(const Point& pivotPoint) = 0;
   virtual void rotate(const Point& pivotPoint) = 0;
   virtual void clearTrail(const Point& new_location,

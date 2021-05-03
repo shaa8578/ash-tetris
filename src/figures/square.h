@@ -16,14 +16,17 @@ class Square : public Figure {
  public:
   Square();
 
-  virtual int width() const override;
+  virtual int rangeRight(int currentCol) const override;
+  inline virtual int rangeRightRotated(int currentCol) const override {
+    return rangeRight(currentCol);
+  }
   virtual void draw(const Point& pivotPoint) override;
   virtual void rotate(const Point& pivotPoint) override;
   virtual void clearTrail(const Point& new_location,
                           MoveDirection direction) override;
 
  protected:
-  static int solveTopRange(int row);
+  static int topRange(int row);
   static void clearVerticalLine(int row, int col);
   static void clearHorizontalLine(int row, int col);
 };
