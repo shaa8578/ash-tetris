@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "figure.hpp"
+#include "figure.h"
 
 //------------------------------------------------------------------------------
 namespace tetris {
@@ -20,17 +20,11 @@ class Line : public Figure {
 
   virtual int rangeRight(int currentCol) const override;
   virtual int rangeRightRotated(int currentCol) const override;
-  virtual void draw(const Point& pivotPoint) override;
-  virtual void rotate(const Point& pivotPoint) override;
-  virtual void clearTrail(const Point& new_location,
-                          MoveDirection direction) override;
 
  protected:
-  void drawLine(const Point& pivotPoint, const char symbol);
-  void rotateLine();
+  virtual void draw(const Point& pivotPoint, char symbol) override;
+  virtual void rotateGeometry() override;
   int topRange(int row);
-  void clearVerticalLine(int row, int col);
-  void clearHorizontalLine(int row, int col);
 
  private:
   /** Направление отрисовки фигуры */

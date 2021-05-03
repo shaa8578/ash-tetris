@@ -5,7 +5,9 @@
 #include <cstring>
 #include <stdexcept>
 
+#include "figure.h"
 #include "figures/line.h"
+//#include "figures/n_figure.h"
 #include "figures/square.h"
 
 //------------------------------------------------------------------------------
@@ -53,12 +55,18 @@ int GamePlay::exec() {
   setWorking();
 
   tetris::Point caret = {0, 10};
+  tetris::Point prev_caret = {-1, 1};
   int input_symbol;
 
   //  m_current_figure.reset(new tetris::Square);
   m_current_figure.reset(new tetris::Line);
+  //  m_current_figure.reset(new tetris::NFigure);
 
   while (m_working) {
+    m_current_figure->clear(prev_caret);
+    m_current_figure->draw(caret);
+    refresh();
+    prev_caret = caret;
     input_symbol = getch();
     switch (input_symbol) {
       case KEY_ESCAPE:
@@ -67,28 +75,18 @@ int GamePlay::exec() {
       case KEY_S_BIG:
       case KEY_S_LITTLE:
       case KEY_DOWN:
-        if (caret.row < m_clientRange.rowBottom - 1) {
-          caret.row++;
-          m_current_figure->draw(caret);
-          m_current_figure->clearTrail(caret, tetris::Figure::DOWN);
-        }
+        if (caret.row < m_clientRange.rowBottom - 1) caret.row++;
         break;
       case KEY_A_BIG:
       case KEY_A_LITTLE:
       case KEY_LEFT:
-        if (caret.col > m_clientRange.colLeft + 1) {
-          caret.col--;
-          m_current_figure->draw(caret);
-          m_current_figure->clearTrail(caret, tetris::Figure::LEFT);
-        }
+        if (caret.col > m_clientRange.colLeft + 1) caret.col--;
         break;
       case KEY_D_BIG:
       case KEY_D_LITTLE:
       case KEY_RIGHT:
         if (m_current_figure->rangeRight(caret.col) < m_clientRange.colRight) {
           caret.col++;
-          m_current_figure->draw(caret);
-          m_current_figure->clearTrail(caret, tetris::Figure::RIGHT);
         }
         break;
       case KEY_SPACE:

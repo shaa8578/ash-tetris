@@ -24,12 +24,10 @@ struct Point {
 /** Интерфейс фигур, используемых в игре */
 class Figure {
  public:
-  /** Возмноные направления перемещения фигуры */
-  enum MoveDirection {
-    LEFT,  /**< Перемещение влево */
-    RIGHT, /**< Перемещение вправо */
-    DOWN   /**< Перемещение вниз */
-  };
+  /** Ширина одной ячейки фигуры */
+  static const int GLYPH_WIDTH = 2;
+  /** Высота одной ячейки фигуры */
+  static const int GLYPH_HEIGHT = 2;
 
   /** Ориентация фигуры */
   enum Orientation {
@@ -39,14 +37,17 @@ class Figure {
 
   virtual ~Figure() = default;
 
-  virtual int rangeRight(int currentCol) const = 0;
-  virtual int rangeRightRotated(int currentCol) const = 0;
-  virtual void draw(const Point& pivotPoint) = 0;
-  virtual void rotate(const Point& pivotPoint) = 0;
-  virtual void clearTrail(const Point& new_location,
-                          MoveDirection direction) = 0;
+  virtual int rangeRight(int locationCol) const = 0;
+  virtual int rangeRightRotated(int locationCol) const = 0;
+
+  void draw(const Point& pivotPoint);
+  void clear(const Point& pivotPoint);
+  void rotate(const Point& pivotPoint);
 
  protected:
+  virtual void draw(const Point& pivotPoint, char symbol) = 0;
+  virtual void rotateGeometry() = 0;
+
   /** Символ заполнитель */
   static const char FILL_SYMBOL = '#';
   /** Пустышка фона */
