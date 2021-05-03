@@ -29,12 +29,6 @@ class Figure {
   /** Высота одной ячейки фигуры */
   static const int GLYPH_HEIGHT = 2;
 
-  /** Ориентация фигуры */
-  enum Orientation {
-    HORIZONTAL, /**< Горизонтальная отрисовка фигуры */
-    VERTICAL /**< Вертикальная отрисовка фигуры */
-  };
-
   virtual ~Figure() = default;
 
   virtual int rangeRight(int locationCol) const = 0;

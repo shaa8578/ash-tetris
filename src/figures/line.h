@@ -2,35 +2,22 @@
 
 #include <string>
 
-#include "figure.h"
+#include "figure_ext.h"
 
 //------------------------------------------------------------------------------
 namespace tetris {
 
 //------------------------------------------------------------------------------
 /** Фигура Линия */
-class Line : public Figure {
-  /** Горизонтальный размер линии */
-  static const Size HORIZONTAL_SIZE;
-  /** Вертикальный размер линии */
-  static const Size VERTICAL_SIZE;
-
+class Line : public FigureExt {
  public:
-  Line();
-
-  virtual int rangeRight(int currentCol) const override;
-  virtual int rangeRightRotated(int currentCol) const override;
+  explicit Line(Orientation orientation = HORIZONTAL);
 
  protected:
-  virtual void draw(const Point& pivotPoint, char symbol) override;
-  virtual void rotateGeometry() override;
-  int topRange(int row);
+  virtual int defaultWidth() const override;
+  virtual int defaultHeight() const override;
 
- private:
-  /** Направление отрисовки фигуры */
-  Figure::Orientation m_orientation;
-  /** Размер фигуры для текущего направления отрисовки */
-  const Size* m_currentSize;
+  virtual void draw(const Point& pivotPoint, char symbol) override;
 };
 
 //------------------------------------------------------------------------------

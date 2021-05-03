@@ -60,7 +60,7 @@ int GamePlay::exec() {
   int input_symbol;
 
   //  m_current_figure.reset(new tetris::Square);
-  //  m_current_figure.reset(new tetris::Line);
+  //  m_current_figure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
   //  m_current_figure.reset(new tetris::NFigure);
   m_current_figure.reset(new tetris::UFigure);
 

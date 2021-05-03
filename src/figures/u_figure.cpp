@@ -10,7 +10,7 @@ tetris::UFigure::UFigure() : NFigure() {}
 //------------------------------------------------------------------------------
 void tetris::UFigure::drawHorizontal(const tetris::Point& pivotPoint,
                                      const char symbol) {
-  const std::string line(currentSize()->height, symbol);
+  const std::string line(currentSize().height, symbol);
 
   auto& row(pivotPoint.row);
   auto& col(pivotPoint.col);
@@ -24,10 +24,10 @@ void tetris::UFigure::drawHorizontal(const tetris::Point& pivotPoint,
 //------------------------------------------------------------------------------
 void tetris::UFigure::drawVertical(const tetris::Point& pivotPoint,
                                    const char symbol) {
-  const std::string line(currentSize()->width / 2, symbol);
+  const std::string line(currentSize().width / 2, symbol);
   auto& row(pivotPoint.row);
   auto& col(pivotPoint.col);
-  auto row_shift(row - currentSize()->width);
+  auto row_shift(row - currentSize().width);
   auto col_shift = col + GLYPH_WIDTH;
   for (int row_it(row); row_it > row_shift; --row_it)
     mvprintw(row_it, col_shift, line.c_str());
