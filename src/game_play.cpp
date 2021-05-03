@@ -1,6 +1,6 @@
 #include "game_play.h"
 
-#include <ncurses.h>
+#include <curses.h>
 
 #include <cstring>
 #include <stdexcept>

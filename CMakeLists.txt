@@ -31,7 +31,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH
   "Путь до исполняемых файлов сборки")
 
 #-------------------------------------------------------------------------------
-set(CURSES_NEED_NCURSES ON)
+set(CURSES_NEED_NCURSES OFF)
 find_package(Curses REQUIRED)
 
 #-------------------------------------------------------------------------------
