@@ -40,18 +40,22 @@ set(SOURCES_FILES
   src/game_play.cpp
   src/figure.cpp
   src/figures/square.cpp
+  src/figure_ext.cpp
   src/figures/line.cpp
   src/figures/n_figure.cpp
   src/figures/u_figure.cpp
+  src/figures/t_figure.cpp
 )
 
 set(HEADERS_FILES
   src/game_play.h
   src/figure.h
   src/figures/square.h
+  src/figure_ext.h
   src/figures/line.h
   src/figures/n_figure.h
   src/figures/u_figure.h
+  src/figures/t_figure.h
 )
 #-------------------------------------------------------------------------------
 set(PROJECT_LABEL ash-tetris)
