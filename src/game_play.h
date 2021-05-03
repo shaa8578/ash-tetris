@@ -1,20 +1,27 @@
 #pragma once
 
+#include <memory>
+
+//------------------------------------------------------------------------------
+namespace tetris {
+class Figure;
+
+/** Границы косольной области */
+struct Range {
+  /** Номер верхней строки */
+  int rowTop;
+  /** Номер нижней строки */
+  int rowBottom;
+  /** Номер левого символа */
+  int colLeft;
+  /** Номер правого символа */
+  int colRight;
+};
+} /* namespace tetris */
+
 //------------------------------------------------------------------------------
 /** Основное игровое пространство */
 class GamePlay {
-  /** Размеры игровой области */
-  struct GamePlaySize {
-    int xMin;
-    int xMax;
-    int yMin;
-    int yMax;
-
-    bool hasToolBox;
-
-    GamePlaySize();
-  };
-
  public:
   GamePlay();
   ~GamePlay();
@@ -40,6 +47,10 @@ class GamePlay {
   volatile char m_working : 1;
   /** Признак инициализации игры */
   bool m_inited;
+  /** Если true, то есть место под панель инструментов */
+  bool m_hasToolbox;
   /** Размеры поля игры */
-  GamePlaySize m_size;
+  tetris::Range m_clientRange;
+  /** Текущая фигура */
+  std::unique_ptr<tetris::Figure> m_current_figure;
 };

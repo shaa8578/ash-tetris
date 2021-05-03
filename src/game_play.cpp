@@ -1,17 +1,16 @@
 #include "game_play.h"
 
-#include <ncurses.h>
+#include <curses.h>
 
 #include <cstring>
 #include <stdexcept>
 
-//------------------------------------------------------------------------------
-GamePlay::GamePlaySize::GamePlaySize() {
-  memset(this, 0x0, sizeof(GamePlay::GamePlaySize));
-}
+#include "figures/square.h"
 
 //------------------------------------------------------------------------------
-GamePlay::GamePlay() : m_working(0x0), m_inited(false) {}
+GamePlay::GamePlay() : m_working(0x0), m_inited(false), m_hasToolbox(false) {
+  memset(&m_clientRange, 0x0, sizeof(tetris::Range));
+}
 
 //------------------------------------------------------------------------------
 GamePlay::~GamePlay() {
@@ -23,9 +22,11 @@ void GamePlay::init() {
   initWindow();
   initGeometryParams();
   drawGameArea();
-  if (m_size.hasToolBox) {
+  if (m_hasToolbox) {
     drawHelp();
   }
+
+  refresh();
   m_inited = true;
 }
 
@@ -50,44 +51,46 @@ int GamePlay::exec() {
 
   setWorking();
 
-  char print_sumbol = '*';
+  tetris::Point caret = {0, 10};
+  int input_symbol;
 
-  int prev_x = 10, prev_y = 0, caret_y = 0, caret_x = 10, c;
+  m_current_figure.reset(new tetris::Square);
 
   while (m_working) {
-    mvaddch(prev_y, prev_x, ' ');
-    mvaddch(caret_y, caret_x, print_sumbol);
-    move(caret_y, caret_x);
-    refresh();
-    prev_x = caret_x;
-    prev_y = caret_y;
-    c = getch();
-    switch (c) {
+    input_symbol = getch();
+    switch (input_symbol) {
       case KEY_ESCAPE:
         unsetWorking();
-        break;
-      case 'w':
-      case 'W':
-      case KEY_UP:
-        if (caret_y > m_size.yMin) caret_y--;
         break;
       case KEY_S_BIG:
       case KEY_S_LITTLE:
       case KEY_DOWN:
-        if (caret_y < m_size.yMax - 1) caret_y++;
+        if (caret.row < m_clientRange.rowBottom - 1) {
+          caret.row++;
+          m_current_figure->draw(caret);
+          m_current_figure->clearTrail(caret, tetris::Figure::DOWN);
+        }
         break;
       case KEY_A_BIG:
       case KEY_A_LITTLE:
       case KEY_LEFT:
-        if (caret_x > m_size.xMin + 1) caret_x--;
+        if (caret.col > m_clientRange.colLeft + 1) {
+          caret.col--;
+          m_current_figure->draw(caret);
+          m_current_figure->clearTrail(caret, tetris::Figure::LEFT);
+        }
         break;
       case KEY_D_BIG:
       case KEY_D_LITTLE:
       case KEY_RIGHT:
-        if (caret_x < m_size.xMax - 1) caret_x++;
+        if (caret.col + m_current_figure->width() < m_clientRange.colRight) {
+          caret.col++;
+          m_current_figure->draw(caret);
+          m_current_figure->clearTrail(caret, tetris::Figure::RIGHT);
+        }
         break;
       case KEY_SPACE:
-        print_sumbol = (print_sumbol == '*') ? '#' : '*';
+        m_current_figure->rotate(caret);
         break;
     }
   }
@@ -127,48 +130,51 @@ void GamePlay::initGeometryParams() {
   /** Минимальная ширина панели инструментов */
   const int TOOL_BOX_WIDTH = 20;
 
-  m_size.hasToolBox = COLS >= (MINIMUM_PLAY_WIDTH + TOOL_BOX_WIDTH);
+  m_hasToolbox = COLS >= (MINIMUM_PLAY_WIDTH + TOOL_BOX_WIDTH);
 
-  m_size.xMin = 0;
-  m_size.yMin = 0;
-  m_size.xMax = (COLS < MINIMUM_PLAY_WIDTH) ? COLS : COLS / 2;
+  m_clientRange.colLeft = 0;
+  m_clientRange.rowTop = 0;
+  m_clientRange.colRight = (COLS < MINIMUM_PLAY_WIDTH) ? COLS : COLS / 2;
   /** NOTE: В разных терминала по разному определятеся количество строк
    *  поэтому уменьшаем на единицу для гарантированной отрисовки рамки */
-  m_size.yMax = LINES - 1;
+  m_clientRange.rowBottom = LINES - 1;
 
-  if ((m_size.xMax & 0x01) < 1) {
-    m_size.xMax--;
+  if ((m_clientRange.colRight & 0x01) < 1) {
+    m_clientRange.colRight--;
   }
 }
 
 //------------------------------------------------------------------------------
 void GamePlay::drawGameArea() {
   /* Вертикальные линии */
-  for (int row_it(m_size.yMin); row_it < m_size.yMax; ++row_it) {
-    mvaddch(row_it, m_size.xMin, '|');
-    mvaddch(row_it, m_size.xMax, '|');
+  for (int row_it(m_clientRange.rowTop); row_it < m_clientRange.rowBottom;
+       ++row_it) {
+    mvaddch(row_it, m_clientRange.colLeft, '|');
+    mvaddch(row_it, m_clientRange.colRight, '|');
   }
   /* Горизонтальные линии */
-  for (int col_it(m_size.xMin + 1); col_it < m_size.xMax; ++col_it) {
-    mvaddch(m_size.yMax, col_it, '-');
+  for (int col_it(m_clientRange.colLeft + 1); col_it < m_clientRange.colRight;
+       ++col_it) {
+    mvaddch(m_clientRange.rowBottom, col_it, '-');
   }
   /* Углы рамки */
-  mvaddch(m_size.yMax, m_size.xMin, '+');
-  mvaddch(m_size.yMax, m_size.xMax, '+');
-
-  refresh();
+  mvaddch(m_clientRange.rowBottom, m_clientRange.colLeft, '+');
+  mvaddch(m_clientRange.rowBottom, m_clientRange.colRight, '+');
 }
 
 //------------------------------------------------------------------------------
 void GamePlay::drawHelp() {
   const auto TEXT_SHIFT = 2;
-  const auto HOR_LINE_Y = m_size.yMax - 5;
-  for (int col_it(m_size.xMax + 1); col_it < COLS; ++col_it) {
-    mvaddch(HOR_LINE_Y, col_it, '-');
+  const auto HOR_LINE_ROW = m_clientRange.rowBottom - 5;
+  for (int col_it(m_clientRange.colRight + 1); col_it < COLS; ++col_it) {
+    mvaddch(HOR_LINE_ROW, col_it, '-');
   }
-  mvprintw(m_size.yMax - 4, m_size.xMax + TEXT_SHIFT, "Move: a,s,d, or arrows");
-  mvprintw(m_size.yMax - 3, m_size.xMax + TEXT_SHIFT, "Flip: space");
-  mvprintw(m_size.yMax - 2, m_size.xMax + TEXT_SHIFT, "Exit: Escape");
+  mvprintw(m_clientRange.rowBottom - 4, m_clientRange.colRight + TEXT_SHIFT,
+           "Move: [a],[s],[d], or arrows");
+  mvprintw(m_clientRange.rowBottom - 3, m_clientRange.colRight + TEXT_SHIFT,
+           "Rotate: [Space]");
+  mvprintw(m_clientRange.rowBottom - 2, m_clientRange.colRight + TEXT_SHIFT,
+           "Exit: [Escape]");
 }
 
 //------------------------------------------------------------------------------
