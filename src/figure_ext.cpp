@@ -10,7 +10,7 @@ tetris::FigureExt::FigureExt(Orientation orientation)
 
 //------------------------------------------------------------------------------
 int tetris::FigureExt::rangeRight(int locationCol) const {
-  return locationCol + currentSize().width;
+  return locationCol + currentSize().width - 1;
 }
 
 //------------------------------------------------------------------------------
