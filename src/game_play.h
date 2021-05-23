@@ -1,6 +1,10 @@
 #pragma once
 
+#include <chrono>
 #include <memory>
+
+//------------------------------------------------------------------------------
+using Clock = std::chrono::system_clock;
 
 //------------------------------------------------------------------------------
 namespace tetris {
@@ -41,10 +45,11 @@ class GamePlay {
   void initGeometryParams();
   void initPreviousPoint();
   void initCurrentPoint();
+  void initTimers();
   void drawGameArea();
   void drawHelp();
-  void setInputTimeout();
 
+  void autoMoving();
   bool canMoving();
   void moveFigure();
   void userMoving();
@@ -60,6 +65,10 @@ class GamePlay {
   bool m_hasToolbox;
   /** Размеры поля игры */
   tetris::Range m_clientRange;
+  /** Шаг сдвига таймера */
+  std::chrono::milliseconds m_timerShift;
+  /** Время срабатывания таймера */
+  Clock::time_point m_timer;
   /** Текущая фигура */
   std::unique_ptr<tetris::Figure> m_current_figure;
   /** Текущая позиция фигуры */

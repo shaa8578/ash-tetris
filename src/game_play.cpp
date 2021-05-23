@@ -13,7 +13,17 @@
 #include "figures/u_figure.h"
 
 //------------------------------------------------------------------------------
-GamePlay::GamePlay() : m_working(0x0), m_inited(false), m_hasToolbox(false) {
+namespace {
+/** Сдвиг по умолчанию таймера перерисовки фигуры, мс */
+static const std::chrono::milliseconds DEFAULT_TIME_SHIFT(1500);
+
+} /* unnamed namespace */
+//------------------------------------------------------------------------------
+GamePlay::GamePlay()
+    : m_working(0x0),
+      m_inited(false),
+      m_hasToolbox(false),
+      m_timerShift(DEFAULT_TIME_SHIFT) {
   memset(&m_clientRange, 0x0, sizeof(tetris::Range));
 }
 
@@ -28,7 +38,7 @@ void GamePlay::init() {
   initGeometryParams();
   initPreviousPoint();
   initCurrentPoint();
-  setInputTimeout();
+  initTimers();
 
   drawGameArea();
   drawHelp();
@@ -52,6 +62,7 @@ int GamePlay::exec() {
   m_current_figure.reset(new tetris::TFigure);
 
   while (m_working) {
+    autoMoving();
     if (canMoving()) {
       moveFigure();
     } else {
@@ -121,7 +132,16 @@ void GamePlay::initPreviousPoint() {
 void GamePlay::initCurrentPoint() {
   m_current_point.reset(new tetris::Point);
   m_current_point->col = 10;
-  m_current_point->row = 0;
+  m_current_point->row = -1;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::initTimers() {
+  /* Время ожидания действия пользователя, милисекунда */
+  timeout(100);
+
+  /* Инициализация таймера автосдвига фигуры */
+  m_timer = Clock::now();
 }
 
 //------------------------------------------------------------------------------
@@ -160,8 +180,12 @@ void GamePlay::drawHelp() {
 }
 
 //------------------------------------------------------------------------------
-void GamePlay::setInputTimeout() {
-  timeout(100);
+void GamePlay::autoMoving() {
+  auto current_time(std::chrono::system_clock::now());
+  if (current_time >= m_timer) {
+    m_timer = current_time + m_timerShift;
+    ++m_current_point->row;
+  }
 }
 
 //------------------------------------------------------------------------------
