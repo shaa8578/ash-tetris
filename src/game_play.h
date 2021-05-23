@@ -5,6 +5,7 @@
 //------------------------------------------------------------------------------
 namespace tetris {
 class Figure;
+struct Point;
 
 /** Границы косольной области */
 struct Range {
@@ -38,8 +39,16 @@ class GamePlay {
 
   void initWindow();
   void initGeometryParams();
+  void initPreviousPoint();
+  void initCurrentPoint();
   void drawGameArea();
   void drawHelp();
+  void setInputTimeout();
+
+  bool canMoving();
+  void moveFigure();
+  void userMoving();
+
   void resetWindow();
 
  private:
@@ -53,4 +62,8 @@ class GamePlay {
   tetris::Range m_clientRange;
   /** Текущая фигура */
   std::unique_ptr<tetris::Figure> m_current_figure;
+  /** Текущая позиция фигуры */
+  std::unique_ptr<tetris::Point> m_current_point;
+  /** Предыдущая позиция фигуры */
+  std::unique_ptr<tetris::Point> m_previous_point;
 };

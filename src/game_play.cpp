@@ -26,39 +26,24 @@ GamePlay::~GamePlay() {
 void GamePlay::init() {
   initWindow();
   initGeometryParams();
-  drawGameArea();
-  if (m_hasToolbox) {
-    drawHelp();
-  }
+  initPreviousPoint();
+  initCurrentPoint();
+  setInputTimeout();
 
+  drawGameArea();
+  drawHelp();
   refresh();
+
   m_inited = true;
 }
 
 //------------------------------------------------------------------------------
 int GamePlay::exec() {
-  /** Кнопка Escape */
-  static const char KEY_ESCAPE = 033; /* 27 */
-  /** Кнопка пробел */
-  static const char KEY_SPACE = 32;
-  /** Прописная буква a */
-  static const char KEY_A_LITTLE = 'a';
-  /** Заглавная буква A */
-  static const char KEY_A_BIG = 'A';
-  /** Прописная буква s */
-  static const char KEY_S_LITTLE = 's';
-  /** Заглавная буква S */
-  static const char KEY_S_BIG = 'S';
-  /** Прописная буква d */
-  static const char KEY_D_LITTLE = 'd';
-  /** Заглавная буква D */
-  static const char KEY_D_BIG = 'D';
-
+  if (isInited() == false) {
+    quit();
+    return EXIT_FAILURE;
+  }
   setWorking();
-
-  tetris::Point caret = {0, 10};
-  tetris::Point prev_caret = {-1, 1};
-  int input_symbol;
 
   //  m_current_figure.reset(new tetris::Square);
   //  m_current_figure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
@@ -67,43 +52,17 @@ int GamePlay::exec() {
   m_current_figure.reset(new tetris::TFigure);
 
   while (m_working) {
-    m_current_figure->clear(prev_caret);
-    m_current_figure->draw(caret);
-    refresh();
-    prev_caret = caret;
-    input_symbol = getch();
-    switch (input_symbol) {
-      case KEY_ESCAPE:
-        unsetWorking();
-        break;
-      case KEY_S_BIG:
-      case KEY_S_LITTLE:
-      case KEY_DOWN:
-        if (caret.row < m_clientRange.rowBottom - 1) caret.row++;
-        break;
-      case KEY_A_BIG:
-      case KEY_A_LITTLE:
-      case KEY_LEFT:
-        if (caret.col > m_clientRange.colLeft + 1) caret.col--;
-        break;
-      case KEY_D_BIG:
-      case KEY_D_LITTLE:
-      case KEY_RIGHT:
-        if (m_current_figure->rangeRight(caret.col) < m_clientRange.colRight) {
-          caret.col++;
-        }
-        break;
-      case KEY_SPACE:
-        if (m_current_figure->rangeRightRotated(caret.col - 1) <
-            m_clientRange.colRight) {
-          m_current_figure->rotate(caret);
-        }
-        break;
+    if (canMoving()) {
+      moveFigure();
+    } else {
+      *m_current_point = *m_previous_point;
     }
+
+    userMoving();
   }
 
   quit();
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -152,6 +111,20 @@ void GamePlay::initGeometryParams() {
 }
 
 //------------------------------------------------------------------------------
+void GamePlay::initPreviousPoint() {
+  m_previous_point.reset(new tetris::Point);
+  m_previous_point->col = -1;
+  m_previous_point->row = -1;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::initCurrentPoint() {
+  m_current_point.reset(new tetris::Point);
+  m_current_point->col = 10;
+  m_current_point->row = 0;
+}
+
+//------------------------------------------------------------------------------
 void GamePlay::drawGameArea() {
   /* Вертикальные линии */
   for (int row_it(m_clientRange.rowTop); row_it < m_clientRange.rowBottom;
@@ -171,6 +144,8 @@ void GamePlay::drawGameArea() {
 
 //------------------------------------------------------------------------------
 void GamePlay::drawHelp() {
+  if (m_hasToolbox == false) return;
+
   const auto TEXT_SHIFT = 2;
   const auto HOR_LINE_ROW = m_clientRange.rowBottom - 5;
   for (int col_it(m_clientRange.colRight + 1); col_it < COLS; ++col_it) {
@@ -182,6 +157,87 @@ void GamePlay::drawHelp() {
            "Rotate: [Space]");
   mvprintw(m_clientRange.rowBottom - 2, m_clientRange.colRight + TEXT_SHIFT,
            "Exit: [Escape]");
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::setInputTimeout() {
+  timeout(100);
+}
+
+//------------------------------------------------------------------------------
+bool GamePlay::canMoving() {
+  bool result(false);
+  if (m_current_point->rotating) {
+    result = (m_current_figure->rangeRightRotated(m_current_point->col - 1) <
+              m_clientRange.colRight);
+
+  } else {
+    result = (m_current_point->row < m_clientRange.rowBottom) &&
+             (m_current_point->col > m_clientRange.colLeft) &&
+             (m_current_figure->rangeRight(m_current_point->col) <
+              m_clientRange.colRight);
+  }
+  return result;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::moveFigure() {
+  if (m_current_point->rotating) {
+    m_current_figure->rotate(*m_current_point);
+    m_current_point->rotating = false;
+  } else {
+    m_current_figure->clear(*m_previous_point);
+    m_current_figure->draw(*m_current_point);
+  }
+  refresh();
+  *m_previous_point = *m_current_point;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::userMoving() {
+  /** Кнопка Escape */
+  static const char KEY_ESCAPE = 033; /* 27 */
+  /** Кнопка пробел */
+  static const char KEY_SPACE = 040; /* 32 */
+  /** Прописная буква a */
+  static const char KEY_A_LITTLE = 'a';
+  /** Заглавная буква A */
+  static const char KEY_A_BIG = 'A';
+  /** Прописная буква s */
+  static const char KEY_S_LITTLE = 's';
+  /** Заглавная буква S */
+  static const char KEY_S_BIG = 'S';
+  /** Прописная буква d */
+  static const char KEY_D_LITTLE = 'd';
+  /** Заглавная буква D */
+  static const char KEY_D_BIG = 'D';
+
+  int input_symbol = getch();
+  switch (input_symbol) {
+    case KEY_ESCAPE:
+      unsetWorking();
+      break;
+    case KEY_S_BIG:
+    case KEY_S_LITTLE:
+    case KEY_DOWN:
+      m_current_point->row++;
+      break;
+    case KEY_A_BIG:
+    case KEY_A_LITTLE:
+    case KEY_LEFT:
+      m_current_point->col--;
+      break;
+    case KEY_D_BIG:
+    case KEY_D_LITTLE:
+    case KEY_RIGHT:
+      m_current_point->col++;
+      break;
+    case KEY_SPACE:
+      m_current_point->rotating = true;
+      break;
+    default:
+      break;
+  }
 }
 
 //------------------------------------------------------------------------------
