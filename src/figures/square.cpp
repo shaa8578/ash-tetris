@@ -17,6 +17,23 @@ int tetris::Square::rangeRight(int currentCol) const {
 }
 
 //------------------------------------------------------------------------------
+std::vector<size_t> tetris::Square::collisionMask(
+    const tetris::Point& pivotPoint) const {
+  auto current_size = SQUARE_SIZE.height;
+  auto row = pivotPoint.row - SQUARE_SIZE.height;
+  if (row < 0) {
+    current_size += row;
+  }
+  row = 0;
+  std::vector<size_t> result(current_size, 0UL);
+  result.reserve(current_size);
+  for (; row < current_size; ++row) {
+    result[row] = ((size_t(SQUARE_SIZE.width) << 2) - 1) << pivotPoint.col;
+  }
+  return result;
+}
+
+//------------------------------------------------------------------------------
 void tetris::Square::draw(const tetris::Point& pivotPoint, char symbol) {
   const std::string line(SQUARE_SIZE.width, symbol);
   const int top = topRange(pivotPoint.row);

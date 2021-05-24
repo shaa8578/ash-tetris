@@ -18,6 +18,8 @@ class Square : public Figure {
   inline virtual int rangeRightRotated(int currentCol) const override {
     return rangeRight(currentCol);
   }
+  virtual std::vector<size_t> collisionMask(
+      const Point& pivotPoint) const override;
 
  protected:
   virtual void draw(const Point& pivotPoint, char symbol) override;
