@@ -17,6 +17,8 @@ class CollisionModel {
 
   bool isCollision(const tetris::Point& pivotPoint,
                    std::vector<size_t> figureMask);
+  void appendMask(const tetris::Point& pivotPoint,
+                  std::vector<size_t> figureMask);
 
  private:
   std::vector<size_t> m_field;

@@ -1,6 +1,7 @@
 #include "game_play.h"
 
 #include <curses.h>
+#include <stddef.h>
 
 #include <cstring>
 #include <stdexcept>
@@ -57,16 +58,37 @@ int GamePlay::exec() {
   }
   setWorking();
 
+  /** Маска предыдущего перемещения фигуры */
+  std::vector<size_t> figure_mask;
+  /** Признак коллизии по вертикали */
+  bool was_vertical_collizion(false);
+
   while (m_working) {
     createFigure();
-    if (isElapsedTimeout()) {
-      autoMoving();
-    }
-    auto mask = m_currentFigure->collisionMask(*m_currentPoint);
-    if (m_collisionModel->isCollision(*m_currentPoint, mask)) {
+    figure_mask = m_currentFigure->collisionMask(*m_currentPoint);
+    if (m_collisionModel->isCollision(*m_currentPoint, figure_mask)) {
+      was_vertical_collizion =
+          (m_currentPoint->row - m_previousPoint->row) != 0;
       *m_currentPoint = *m_previousPoint;
     } else {
       moveFigure();
+    }
+
+    if (isElapsedTimeout()) {
+      if (was_vertical_collizion) {
+        m_collisionModel->appendMask(*m_currentPoint, figure_mask);
+        m_currentFigure.reset(nullptr);
+
+        // TODO game_play.cpp: Проверить возможность продолжения игры
+        if (m_previousPoint->row < 1) {
+          unsetWorking();
+          break;
+        }
+        was_vertical_collizion = false;
+        continue;
+      }
+      autoMoving();
+      continue;
     }
 
     userMoving();
@@ -198,7 +220,7 @@ void GamePlay::createFigure() {
   //  m_currentFigure.reset(new tetris::TFigure);
   auto col = (m_clientRange.colRight - m_clientRange.colLeft) / 2 -
              m_currentFigure->width() / 2;
-  *m_currentPoint = *m_previousPoint = {/*row*/ -1, col, /*rotating*/ false};
+  *m_currentPoint = *m_previousPoint = {/*row*/ 0, col, /*rotating*/ false};
 }
 
 //------------------------------------------------------------------------------

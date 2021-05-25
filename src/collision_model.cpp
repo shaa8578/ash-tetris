@@ -32,3 +32,14 @@ bool CollisionModel::isCollision(const tetris::Point& pivotPoint,
   }
   return false;
 }
+
+//------------------------------------------------------------------------------
+void CollisionModel::appendMask(const tetris::Point& pivotPoint,
+                                std::vector<size_t> figureMask) {
+  const auto rows_count(figureMask.size());
+  auto begin = pivotPoint.row - static_cast<int>(rows_count);
+
+  for (int row(begin); row < pivotPoint.row; ++row) {
+    m_field[row] |= figureMask[row - begin];
+  }
+}

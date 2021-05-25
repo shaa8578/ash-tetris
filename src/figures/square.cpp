@@ -29,6 +29,9 @@ std::vector<size_t> tetris::Square::collisionMask(
   if (row < 0) {
     current_size += row;
   }
+  if (current_size < 1) {
+    return std::vector<size_t>();
+  }
   row = 0;
   std::vector<size_t> result(current_size, 0UL);
   result.reserve(current_size);
