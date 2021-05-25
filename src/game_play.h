@@ -24,6 +24,8 @@ struct Range {
 };
 } /* namespace tetris */
 
+class CollisionModel;
+
 //------------------------------------------------------------------------------
 /** Основное игровое пространство */
 class GamePlay {
@@ -43,14 +45,16 @@ class GamePlay {
 
   void initWindow();
   void initGeometryParams();
+  void initCollisionModel();
   void initPreviousPoint();
   void initCurrentPoint();
   void initTimers();
   void drawGameArea();
   void drawHelp();
 
+  void createFigure();
+  bool isElapsedTimeout();
   void autoMoving();
-  bool canMoving();
   void moveFigure();
   void userMoving();
 
@@ -70,9 +74,11 @@ class GamePlay {
   /** Время срабатывания таймера */
   Clock::time_point m_timer;
   /** Текущая фигура */
-  std::unique_ptr<tetris::Figure> m_current_figure;
+  std::unique_ptr<tetris::Figure> m_currentFigure;
   /** Текущая позиция фигуры */
-  std::unique_ptr<tetris::Point> m_current_point;
+  std::unique_ptr<tetris::Point> m_currentPoint;
   /** Предыдущая позиция фигуры */
-  std::unique_ptr<tetris::Point> m_previous_point;
+  std::unique_ptr<tetris::Point> m_previousPoint;
+  /** Модель коллизий */
+  std::unique_ptr<CollisionModel> m_collisionModel;
 };

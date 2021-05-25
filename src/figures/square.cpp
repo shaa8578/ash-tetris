@@ -12,8 +12,28 @@ const tetris::Size tetris::Square::SQUARE_SIZE = {2 * GLYPH_WIDTH,
 tetris::Square::Square() : Figure() {}
 
 //------------------------------------------------------------------------------
-int tetris::Square::rangeRight(int currentCol) const {
-  return currentCol + SQUARE_SIZE.width;
+int tetris::Square::width() const {
+  return SQUARE_SIZE.width;
+}
+
+//------------------------------------------------------------------------------
+std::vector<size_t> tetris::Square::collisionMask(
+    const tetris::Point& pivotPoint) const {
+  auto current_size = SQUARE_SIZE.height;
+  auto row = pivotPoint.row - SQUARE_SIZE.height;
+  if (row < 0) {
+    current_size += row;
+  }
+  if (current_size < 1) {
+    return std::vector<size_t>();
+  }
+  row = 0;
+  std::vector<size_t> result(current_size, 0UL);
+  result.reserve(current_size);
+  for (; row < current_size; ++row) {
+    result[row] = ((size_t(SQUARE_SIZE.width) << 2) - 1) << pivotPoint.col;
+  }
+  return result;
 }
 
 //------------------------------------------------------------------------------

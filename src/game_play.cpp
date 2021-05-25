@@ -1,10 +1,12 @@
 #include "game_play.h"
 
 #include <curses.h>
+#include <stddef.h>
 
 #include <cstring>
 #include <stdexcept>
 
+#include "collision_model.h"
 #include "figure.h"
 #include "figures/line.h"
 #include "figures/n_figure.h"
@@ -36,6 +38,7 @@ GamePlay::~GamePlay() {
 void GamePlay::init() {
   initWindow();
   initGeometryParams();
+  initCollisionModel();
   initPreviousPoint();
   initCurrentPoint();
   initTimers();
@@ -55,18 +58,37 @@ int GamePlay::exec() {
   }
   setWorking();
 
-  //  m_current_figure.reset(new tetris::Square);
-  //  m_current_figure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
-  //  m_current_figure.reset(new tetris::NFigure);
-  //  m_current_figure.reset(new tetris::UFigure);
-  m_current_figure.reset(new tetris::TFigure);
+  /** Маска предыдущего перемещения фигуры */
+  std::vector<size_t> figure_mask;
+  /** Признак коллизии по вертикали */
+  bool was_vertical_collizion(false);
 
   while (m_working) {
-    autoMoving();
-    if (canMoving()) {
-      moveFigure();
+    createFigure();
+    figure_mask = m_currentFigure->collisionMask(*m_currentPoint);
+    if (m_collisionModel->isCollision(*m_currentPoint, figure_mask)) {
+      was_vertical_collizion =
+          (m_currentPoint->row - m_previousPoint->row) != 0;
+      *m_currentPoint = *m_previousPoint;
     } else {
-      *m_current_point = *m_previous_point;
+      moveFigure();
+    }
+
+    if (isElapsedTimeout()) {
+      if (was_vertical_collizion) {
+        m_collisionModel->appendMask(*m_currentPoint, figure_mask);
+        m_currentFigure.reset(nullptr);
+
+        // TODO game_play.cpp: Проверить возможность продолжения игры
+        if (m_previousPoint->row < 1) {
+          unsetWorking();
+          break;
+        }
+        was_vertical_collizion = false;
+        continue;
+      }
+      autoMoving();
+      continue;
     }
 
     userMoving();
@@ -103,15 +125,21 @@ void GamePlay::initWindow() {
 //------------------------------------------------------------------------------
 void GamePlay::initGeometryParams() {
   /** Минимальная ширина экрана, символ */
-  const int MINIMUM_PLAY_WIDTH = 40;
+  static const int MINIMUM_PLAY_WIDTH = 40;
+  /** Максимальная ширина экрана, символ */
+  static const int MAXIMUM_PLAY_WIDTH = 64;
   /** Минимальная ширина панели инструментов */
-  const int TOOL_BOX_WIDTH = 20;
+  static const int TOOL_BOX_WIDTH = 20;
 
   m_hasToolbox = COLS >= (MINIMUM_PLAY_WIDTH + TOOL_BOX_WIDTH);
 
   m_clientRange.colLeft = 0;
   m_clientRange.rowTop = 0;
-  m_clientRange.colRight = (COLS < MINIMUM_PLAY_WIDTH) ? COLS : COLS / 2;
+  m_clientRange.colRight = (COLS >= MINIMUM_PLAY_WIDTH * 2) ? COLS / 2 : COLS;
+  /* Делаем ограничение для упрощения модели коллизий */
+  if (m_clientRange.colRight > MAXIMUM_PLAY_WIDTH) {
+    m_clientRange.colRight = MAXIMUM_PLAY_WIDTH;
+  }
   /** NOTE: В разных терминала по разному определятеся количество строк
    *  поэтому уменьшаем на единицу для гарантированной отрисовки рамки */
   m_clientRange.rowBottom = LINES - 1;
@@ -122,17 +150,19 @@ void GamePlay::initGeometryParams() {
 }
 
 //------------------------------------------------------------------------------
+void GamePlay::initCollisionModel() {
+  m_collisionModel.reset(
+      new CollisionModel(m_clientRange.colRight, m_clientRange.rowBottom));
+}
+
+//------------------------------------------------------------------------------
 void GamePlay::initPreviousPoint() {
-  m_previous_point.reset(new tetris::Point);
-  m_previous_point->col = -1;
-  m_previous_point->row = -1;
+  m_previousPoint.reset(new tetris::Point);
 }
 
 //------------------------------------------------------------------------------
 void GamePlay::initCurrentPoint() {
-  m_current_point.reset(new tetris::Point);
-  m_current_point->col = 10;
-  m_current_point->row = -1;
+  m_currentPoint.reset(new tetris::Point);
 }
 
 //------------------------------------------------------------------------------
@@ -180,41 +210,45 @@ void GamePlay::drawHelp() {
 }
 
 //------------------------------------------------------------------------------
-void GamePlay::autoMoving() {
-  auto current_time(std::chrono::system_clock::now());
-  if (current_time >= m_timer) {
-    m_timer = current_time + m_timerShift;
-    ++m_current_point->row;
-  }
+void GamePlay::createFigure() {
+  if (m_currentFigure != nullptr) return;
+
+  m_currentFigure.reset(new tetris::Square);
+  //  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
+  //  m_currentFigure.reset(new tetris::NFigure);
+  //  m_currentFigure.reset(new tetris::UFigure);
+  //  m_currentFigure.reset(new tetris::TFigure);
+  auto col = (m_clientRange.colRight - m_clientRange.colLeft) / 2 -
+             m_currentFigure->width() / 2;
+  *m_currentPoint = *m_previousPoint = {/*row*/ 0, col, /*rotating*/ false};
 }
 
 //------------------------------------------------------------------------------
-bool GamePlay::canMoving() {
-  bool result(false);
-  if (m_current_point->rotating) {
-    result = (m_current_figure->rangeRightRotated(m_current_point->col - 1) <
-              m_clientRange.colRight);
-
-  } else {
-    result = (m_current_point->row < m_clientRange.rowBottom) &&
-             (m_current_point->col > m_clientRange.colLeft) &&
-             (m_current_figure->rangeRight(m_current_point->col) <
-              m_clientRange.colRight);
+bool GamePlay::isElapsedTimeout() {
+  auto current_time(std::chrono::system_clock::now());
+  if (current_time >= m_timer) {
+    m_timer = current_time + m_timerShift;
+    return true;
   }
-  return result;
+  return false;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::autoMoving() {
+  ++m_currentPoint->row;
 }
 
 //------------------------------------------------------------------------------
 void GamePlay::moveFigure() {
-  if (m_current_point->rotating) {
-    m_current_figure->rotate(*m_current_point);
-    m_current_point->rotating = false;
+  if (m_currentPoint->rotating) {
+    m_currentFigure->rotate(*m_currentPoint);
+    m_currentPoint->rotating = false;
   } else {
-    m_current_figure->clear(*m_previous_point);
-    m_current_figure->draw(*m_current_point);
+    m_currentFigure->clear(*m_previousPoint);
+    m_currentFigure->draw(*m_currentPoint);
   }
   refresh();
-  *m_previous_point = *m_current_point;
+  *m_previousPoint = *m_currentPoint;
 }
 
 //------------------------------------------------------------------------------
@@ -244,20 +278,20 @@ void GamePlay::userMoving() {
     case KEY_S_BIG:
     case KEY_S_LITTLE:
     case KEY_DOWN:
-      m_current_point->row++;
+      m_currentPoint->row++;
       break;
     case KEY_A_BIG:
     case KEY_A_LITTLE:
     case KEY_LEFT:
-      m_current_point->col--;
+      m_currentPoint->col--;
       break;
     case KEY_D_BIG:
     case KEY_D_LITTLE:
     case KEY_RIGHT:
-      m_current_point->col++;
+      m_currentPoint->col++;
       break;
     case KEY_SPACE:
-      m_current_point->rotating = true;
+      m_currentPoint->rotating = true;
       break;
     default:
       break;

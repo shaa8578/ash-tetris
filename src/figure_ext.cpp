@@ -9,30 +9,6 @@ tetris::FigureExt::FigureExt(Orientation orientation)
     : Figure(), m_orientation(orientation), m_currentSize(nullptr) {}
 
 //------------------------------------------------------------------------------
-int tetris::FigureExt::rangeRight(int locationCol) const {
-  return locationCol + currentSize().width - 1;
-}
-
-//------------------------------------------------------------------------------
-int tetris::FigureExt::rangeRightRotated(int locationCol) const {
-  int rotated_width(0);
-  switch (m_orientation) {
-    case HORIZONTAL:
-    case HORIZONTAL_INVERT:
-      rotated_width = defaultHeight();
-      break;
-    case VERTICAL:
-    case VERTICAL_INVERT:
-      rotated_width = defaultWidth();
-      break;
-    default:
-      throwInvalidOrientation();
-      break;
-  }
-  return locationCol + rotated_width;
-}
-
-//------------------------------------------------------------------------------
 const tetris::Size& tetris::FigureExt::currentSize() const {
   if (m_currentSize == nullptr) {
     auto current_size = const_cast<PtrSize*>(&m_currentSize);

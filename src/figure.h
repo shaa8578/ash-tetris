@@ -1,5 +1,9 @@
 #pragma once
 
+#include <stddef.h>
+
+#include <vector>
+
 namespace tetris {
 
 //------------------------------------------------------------------------------
@@ -33,8 +37,8 @@ class Figure {
 
   virtual ~Figure() = default;
 
-  virtual int rangeRight(int locationCol) const = 0;
-  virtual int rangeRightRotated(int locationCol) const = 0;
+  virtual int width() const = 0;
+  virtual std::vector<size_t> collisionMask(const Point& pivotPoint) const = 0;
 
   void draw(const Point& pivotPoint);
   void clear(const Point& pivotPoint);

@@ -25,9 +25,6 @@ class FigureExt : public Figure {
 
   explicit FigureExt(Orientation orientation = HORIZONTAL);
 
-  virtual int rangeRight(int locationCol) const override;
-  virtual int rangeRightRotated(int locationCol) const override;
-
  protected:
   virtual int defaultWidth() const = 0;
   virtual int defaultHeight() const = 0;
