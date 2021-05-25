@@ -17,11 +17,6 @@ int tetris::Square::width() const {
 }
 
 //------------------------------------------------------------------------------
-int tetris::Square::rangeRight(int currentCol) const {
-  return currentCol + SQUARE_SIZE.width;
-}
-
-//------------------------------------------------------------------------------
 std::vector<size_t> tetris::Square::collisionMask(
     const tetris::Point& pivotPoint) const {
   auto current_size = SQUARE_SIZE.height;
