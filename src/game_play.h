@@ -52,6 +52,7 @@ class GamePlay {
   void drawGameArea();
   void drawHelp();
 
+  void createFigure();
   bool isElapsedTimeout();
   void autoMoving();
   void moveFigure();

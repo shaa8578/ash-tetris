@@ -14,6 +14,7 @@ class Square : public Figure {
  public:
   Square();
 
+  virtual int width() const override;
   virtual int rangeRight(int currentCol) const override;
   inline virtual int rangeRightRotated(int currentCol) const override {
     return rangeRight(currentCol);

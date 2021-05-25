@@ -37,6 +37,7 @@ class Figure {
 
   virtual ~Figure() = default;
 
+  virtual int width() const = 0;
   virtual int rangeRight(int locationCol) const = 0;
   virtual int rangeRightRotated(int locationCol) const = 0;
   virtual std::vector<size_t> collisionMask(const Point& pivotPoint) const = 0;

@@ -57,14 +57,8 @@ int GamePlay::exec() {
   }
   setWorking();
 
-  m_currentFigure.reset(new tetris::Square);
-  //  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
-  //  m_currentFigure.reset(new tetris::NFigure);
-  //  m_currentFigure.reset(new tetris::UFigure);
-  //  m_currentFigure.reset(new tetris::TFigure);
-
   while (m_working) {
-    autoMoving();
+    createFigure();
     if (isElapsedTimeout()) {
       autoMoving();
     }
@@ -142,15 +136,11 @@ void GamePlay::initCollisionModel() {
 //------------------------------------------------------------------------------
 void GamePlay::initPreviousPoint() {
   m_previousPoint.reset(new tetris::Point);
-  m_previousPoint->col = -1;
-  m_previousPoint->row = -1;
 }
 
 //------------------------------------------------------------------------------
 void GamePlay::initCurrentPoint() {
   m_currentPoint.reset(new tetris::Point);
-  m_currentPoint->col = 10;
-  m_currentPoint->row = -1;
 }
 
 //------------------------------------------------------------------------------
@@ -198,12 +188,32 @@ void GamePlay::drawHelp() {
 }
 
 //------------------------------------------------------------------------------
-void GamePlay::autoMoving() {
+void GamePlay::createFigure() {
+  if (m_currentFigure != nullptr) return;
+
+  m_currentFigure.reset(new tetris::Square);
+  //  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
+  //  m_currentFigure.reset(new tetris::NFigure);
+  //  m_currentFigure.reset(new tetris::UFigure);
+  //  m_currentFigure.reset(new tetris::TFigure);
+  auto col = (m_clientRange.colRight - m_clientRange.colLeft) / 2 -
+             m_currentFigure->width() / 2;
+  *m_currentPoint = *m_previousPoint = {/*row*/ -1, col, /*rotating*/ false};
+}
+
+//------------------------------------------------------------------------------
+bool GamePlay::isElapsedTimeout() {
   auto current_time(std::chrono::system_clock::now());
   if (current_time >= m_timer) {
     m_timer = current_time + m_timerShift;
-    ++m_currentPoint->row;
+    return true;
   }
+  return false;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::autoMoving() {
+  ++m_currentPoint->row;
 }
 
 //------------------------------------------------------------------------------

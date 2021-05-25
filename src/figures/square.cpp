@@ -12,6 +12,11 @@ const tetris::Size tetris::Square::SQUARE_SIZE = {2 * GLYPH_WIDTH,
 tetris::Square::Square() : Figure() {}
 
 //------------------------------------------------------------------------------
+int tetris::Square::width() const {
+  return SQUARE_SIZE.width;
+}
+
+//------------------------------------------------------------------------------
 int tetris::Square::rangeRight(int currentCol) const {
   return currentCol + SQUARE_SIZE.width;
 }
