@@ -35,6 +35,7 @@ class FigureExt : public Figure {
   virtual void rotateGeometry() override;
 
   Orientation orientation() const { return m_orientation; }
+  Orientation nextOrientation() const;
 
  private:
   void rotateOrientation();

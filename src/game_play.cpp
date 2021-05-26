@@ -79,9 +79,7 @@ int GamePlay::exec() {
         m_collisionModel->appendMask(*m_currentPoint, figure_mask);
         m_currentFigure.reset(nullptr);
 
-        // TODO game_play.cpp: Проверить возможность продолжения игры
-        if (m_previousPoint->row < 1) {
-          unsetWorking();
+        if (m_previousPoint->row <= static_cast<int>(figure_mask.size())) {
           break;
         }
         was_vertical_collizion = false;
@@ -213,14 +211,17 @@ void GamePlay::drawHelp() {
 void GamePlay::createFigure() {
   if (m_currentFigure != nullptr) return;
 
-  m_currentFigure.reset(new tetris::Square);
-  //  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
+//    m_currentFigure.reset(new tetris::Square);
+  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
   //  m_currentFigure.reset(new tetris::NFigure);
   //  m_currentFigure.reset(new tetris::UFigure);
   //  m_currentFigure.reset(new tetris::TFigure);
   auto col = (m_clientRange.colRight - m_clientRange.colLeft) / 2 -
              m_currentFigure->width() / 2;
-  *m_currentPoint = *m_previousPoint = {/*row*/ 0, col, /*rotating*/ false};
+  if ((col & 0x01) < 1) {
+    col--;
+  }
+  *m_currentPoint = *m_previousPoint = {/*row*/ 1, col, /*rotating*/ false};
 }
 
 //------------------------------------------------------------------------------
@@ -283,12 +284,12 @@ void GamePlay::userMoving() {
     case KEY_A_BIG:
     case KEY_A_LITTLE:
     case KEY_LEFT:
-      m_currentPoint->col--;
+      m_currentPoint->col -= tetris::Figure::GLYPH_WIDTH;
       break;
     case KEY_D_BIG:
     case KEY_D_LITTLE:
     case KEY_RIGHT:
-      m_currentPoint->col++;
+      m_currentPoint->col += tetris::Figure::GLYPH_WIDTH;
       break;
     case KEY_SPACE:
       m_currentPoint->rotating = true;

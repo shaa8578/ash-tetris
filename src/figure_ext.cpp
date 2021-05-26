@@ -43,13 +43,18 @@ void tetris::FigureExt::rotateGeometry() {
 }
 
 //------------------------------------------------------------------------------
-void tetris::FigureExt::rotateOrientation() {
+tetris::FigureExt::Orientation tetris::FigureExt::nextOrientation() const {
   int current_orientation_idx(m_orientation);
   current_orientation_idx++;
   if (current_orientation_idx >= ORIENTATION_SIZE) {
     current_orientation_idx = 0;
   }
-  m_orientation = static_cast<Orientation>(current_orientation_idx);
+  return static_cast<Orientation>(current_orientation_idx);
+}
+
+//------------------------------------------------------------------------------
+void tetris::FigureExt::rotateOrientation() {
+  m_orientation = nextOrientation();
 }
 
 //------------------------------------------------------------------------------
