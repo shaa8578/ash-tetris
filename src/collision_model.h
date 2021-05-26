@@ -19,7 +19,12 @@ class CollisionModel {
                    std::vector<size_t> figureMask);
   void appendMask(const tetris::Point& pivotPoint,
                   std::vector<size_t> figureMask);
+  int removeFullRows(int begin, int end);
+
+ protected:
+  void removeRow(int rowNo);
 
  private:
+  size_t m_defaultMask;
   std::vector<size_t> m_field;
 };

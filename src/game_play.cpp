@@ -77,6 +77,12 @@ int GamePlay::exec() {
     if (isElapsedTimeout()) {
       if (was_vertical_collizion) {
         m_collisionModel->appendMask(*m_currentPoint, figure_mask);
+        auto begin_checked_row = m_currentPoint->row - static_cast<int>(figure_mask.size());
+        auto removed_rows_count = m_collisionModel->removeFullRows(begin_checked_row, m_currentPoint->row+1);
+        if(removed_rows_count > 0){
+          // TODO game_play.cpp: Добавить очков
+          refreshField(m_currentPoint->row);
+        }
         m_currentFigure.reset(nullptr);
 
         if (m_previousPoint->row <= static_cast<int>(figure_mask.size())) {
@@ -232,6 +238,11 @@ bool GamePlay::isElapsedTimeout() {
     return true;
   }
   return false;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::refreshField(int endRow){
+  // TODO game_play.cpp: refreshField()
 }
 
 //------------------------------------------------------------------------------
