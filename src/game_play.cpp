@@ -65,7 +65,9 @@ int GamePlay::exec() {
 
   while (m_working) {
     createFigure();
-    figure_mask = m_currentFigure->collisionMask(*m_currentPoint);
+    figure_mask = m_currentFigure->collisionMask(
+        m_currentPoint->row, m_currentPoint->col - m_clientRange.colLeft,
+        m_currentPoint->rotating);
     if (m_collisionModel->isCollision(*m_currentPoint, figure_mask)) {
       was_vertical_collizion =
           (m_currentPoint->row - m_previousPoint->row) != 0;
@@ -77,9 +79,11 @@ int GamePlay::exec() {
     if (isElapsedTimeout()) {
       if (was_vertical_collizion) {
         m_collisionModel->appendMask(*m_currentPoint, figure_mask);
-        auto begin_checked_row = m_currentPoint->row - static_cast<int>(figure_mask.size());
-        auto removed_rows_count = m_collisionModel->removeFullRows(begin_checked_row, m_currentPoint->row+1);
-        if(removed_rows_count > 0){
+        auto begin_checked_row =
+            m_currentPoint->row - static_cast<int>(figure_mask.size()) - 1;
+        auto removed_rows_count = m_collisionModel->removeFullRows(
+            begin_checked_row, m_currentPoint->row + 1);
+        if (removed_rows_count > 0) {
           // TODO game_play.cpp: Добавить очков
           refreshField(m_currentPoint->row);
         }
@@ -151,12 +155,13 @@ void GamePlay::initGeometryParams() {
   if ((m_clientRange.colRight & 0x01) < 1) {
     m_clientRange.colRight--;
   }
+  m_clientRange.width = m_clientRange.colRight - m_clientRange.colLeft - 1;
 }
 
 //------------------------------------------------------------------------------
 void GamePlay::initCollisionModel() {
   m_collisionModel.reset(
-      new CollisionModel(m_clientRange.colRight, m_clientRange.rowBottom));
+      new CollisionModel(m_clientRange.width, m_clientRange.rowBottom));
 }
 
 //------------------------------------------------------------------------------
@@ -217,7 +222,7 @@ void GamePlay::drawHelp() {
 void GamePlay::createFigure() {
   if (m_currentFigure != nullptr) return;
 
-//    m_currentFigure.reset(new tetris::Square);
+  //    m_currentFigure.reset(new tetris::Square);
   m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
   //  m_currentFigure.reset(new tetris::NFigure);
   //  m_currentFigure.reset(new tetris::UFigure);

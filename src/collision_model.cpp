@@ -20,7 +20,7 @@ bool CollisionModel::isCollision(const tetris::Point& pivotPoint,
   if (pivotPoint.row < 0) return false;
 
   const auto rows_count(figureMask.size());
-  auto last = m_field.begin() + size_t(pivotPoint.row);
+  auto last = m_field.begin() + size_t(pivotPoint.row) + 1;
   auto first = last - rows_count;
   std::vector<size_t> test_rows(first, last);
 
@@ -47,13 +47,18 @@ int CollisionModel::removeFullRows(int begin, int end) {
   int removed_rows_count(0);
 
   for (; begin < end; ++begin) {
-    if ((m_field[begin] ^ ~0) == 1) {
+    if ((m_field[begin] ^ ~0) == 0) {
       removeRow(begin);
       ++removed_rows_count;
     }
   }
 
   return removed_rows_count;
+}
+
+//------------------------------------------------------------------------------
+size_t CollisionModel::value(int row) {
+  return m_field[row];
 }
 
 //------------------------------------------------------------------------------

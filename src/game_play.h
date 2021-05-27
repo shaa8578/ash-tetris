@@ -21,6 +21,8 @@ struct Range {
   int colLeft;
   /** Номер правого символа */
   int colRight;
+  /** Длина игрового поля */
+  int width;
 };
 } /* namespace tetris */
 

@@ -35,10 +35,16 @@ class Figure {
   /** Высота одной ячейки фигуры */
   static const int GLYPH_HEIGHT = 2;
 
+  /** Символ заполнитель */
+  static const char FILL_SYMBOL = '#';
+  /** Пустышка фона */
+  static const char EMPTY_SYMBOL = ' ';
+
   virtual ~Figure() = default;
 
   virtual int width() const = 0;
-  virtual std::vector<size_t> collisionMask(const Point& pivotPoint) const = 0;
+  virtual std::vector<size_t> collisionMask(int row, int col,
+                                            bool rotating) const = 0;
 
   void draw(const Point& pivotPoint);
   void clear(const Point& pivotPoint);
@@ -47,11 +53,6 @@ class Figure {
  protected:
   virtual void draw(const Point& pivotPoint, char symbol) = 0;
   virtual void rotateGeometry() = 0;
-
-  /** Символ заполнитель */
-  static const char FILL_SYMBOL = '#';
-  /** Пустышка фона */
-  static const char EMPTY_SYMBOL = ' ';
 };
 
 //------------------------------------------------------------------------------

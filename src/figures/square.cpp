@@ -17,21 +17,21 @@ int tetris::Square::width() const {
 }
 
 //------------------------------------------------------------------------------
-std::vector<size_t> tetris::Square::collisionMask(
-    const tetris::Point& pivotPoint) const {
+std::vector<size_t> tetris::Square::collisionMask(int row, int col,
+                                                  bool) const {
   auto current_size = SQUARE_SIZE.height;
-  auto row = pivotPoint.row - SQUARE_SIZE.height;
-  if (row < 0) {
-    current_size += row;
+  auto first_row = row - SQUARE_SIZE.height;
+  if (first_row < 0) {
+    current_size += first_row;
   }
   if (current_size < 1) {
     return std::vector<size_t>();
   }
-  row = 0;
+  first_row = 0;
   std::vector<size_t> result(current_size, 0UL);
   result.reserve(current_size);
-  for (; row < current_size; ++row) {
-    result[row] = ((size_t(SQUARE_SIZE.width) << 2) - 1) << pivotPoint.col;
+  for (; first_row < current_size; ++first_row) {
+    result[first_row] = ((size_t(SQUARE_SIZE.width) << 2) - 1) << col;
   }
   return result;
 }

@@ -15,8 +15,8 @@ class Square : public Figure {
   Square();
 
   virtual int width() const override;
-  virtual std::vector<size_t> collisionMask(
-      const Point& pivotPoint) const override;
+  virtual std::vector<size_t> collisionMask(int row, int col,
+                                            bool) const override;
 
  protected:
   virtual void draw(const Point& pivotPoint, char symbol) override;
