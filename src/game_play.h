@@ -57,6 +57,8 @@ class GamePlay {
   void createFigure();
   bool isElapsedTimeout();
   void refreshField(int endRow);
+  void drawFullLine(int row, char symbol);
+  void drawLine(int row, size_t mask);
   void autoMoving();
   void moveFigure();
   void userMoving();

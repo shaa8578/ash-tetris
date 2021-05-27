@@ -246,8 +246,41 @@ bool GamePlay::isElapsedTimeout() {
 }
 
 //------------------------------------------------------------------------------
-void GamePlay::refreshField(int endRow){
-  // TODO game_play.cpp: refreshField()
+void GamePlay::refreshField(int endRow) {
+  static const size_t FULL_LINE_MASK = (size_t(1) << m_clientRange.width) - 1;
+  for (int row(0); row < endRow + 1; ++row) {
+    auto collision_row(m_collisionModel->value(row));
+    /* Строка пустая */
+    if ((collision_row & FULL_LINE_MASK) == 0) {
+      drawFullLine(row, tetris::Figure::EMPTY_SYMBOL);
+      continue;
+    }
+    /* Строка полностью заполнена */
+    if ((collision_row ^ ~0) == 0) {
+      drawFullLine(row, tetris::Figure::FILL_SYMBOL);
+      continue;
+    }
+    /* Остальные случаи */
+    drawLine(row, collision_row);
+  }
+  refresh();
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawFullLine(int row, char symbol) {
+  std::string line(m_clientRange.width, symbol);
+  mvprintw(row, m_clientRange.colLeft + 1, line.c_str());
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawLine(int row, size_t mask) {
+  std::string line(m_clientRange.width, tetris::Figure::EMPTY_SYMBOL);
+  for (int col(0); col < m_clientRange.width; ++col) {
+    if (((mask >> col) & 0x1) > 0) {
+      line[col] = tetris::Figure::FILL_SYMBOL;
+    }
+  }
+  mvprintw(row, m_clientRange.colLeft + 1, line.c_str());
 }
 
 //------------------------------------------------------------------------------
