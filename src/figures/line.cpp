@@ -12,19 +12,18 @@ int tetris::Line::width() const {
 }
 
 //------------------------------------------------------------------------------
-std::vector<size_t> tetris::Line::collisionMask(
-    const tetris::Point& pivotPoint) const {
-  auto result_orientation =
-      (pivotPoint.rotating) ? nextOrientation() : orientation();
+std::vector<size_t> tetris::Line::collisionMask(int row, int col,
+                                                bool rotating) const {
+  auto result_orientation = (rotating) ? nextOrientation() : orientation();
   std::vector<size_t> result;
   switch (result_orientation) {
     case tetris::FigureExt::HORIZONTAL:
     case tetris::FigureExt::HORIZONTAL_INVERT:
-      result = collisionMask(pivotPoint, defaultWidth(), defaultHeight());
+      result = collisionMask(row, col, defaultWidth(), defaultHeight());
       break;
     case tetris::FigureExt::VERTICAL:
     case tetris::FigureExt::VERTICAL_INVERT:
-      result = collisionMask(pivotPoint, defaultHeight(), defaultWidth());
+      result = collisionMask(row, col, defaultHeight(), defaultWidth());
       break;
     default:
       break;
@@ -52,14 +51,13 @@ void tetris::Line::draw(const Point& pivotPoint, char symbol) {
 }
 
 //------------------------------------------------------------------------------
-std::vector<size_t> tetris::Line::collisionMask(const tetris::Point& pivotPoint,
+std::vector<size_t> tetris::Line::collisionMask(int row, int col,
                                                 int orientationWidth,
                                                 int orientationHeight) const {
-  int mask_size = (pivotPoint.row - orientationHeight < 0) ? pivotPoint.row
-                                                           : orientationHeight;
+  int mask_size = (row - orientationHeight < 0) ? row : orientationHeight;
   if (mask_size == 0) ++mask_size;
 
-  size_t mask = size_t((1 << orientationWidth) - 1) << pivotPoint.col;
+  size_t mask = ((size_t(1) << orientationWidth) - 1) << (col - 1);
   std::vector<size_t> result(mask_size, mask);
   return result;
 }

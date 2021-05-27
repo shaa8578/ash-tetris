@@ -65,7 +65,9 @@ int GamePlay::exec() {
 
   while (m_working) {
     createFigure();
-    figure_mask = m_currentFigure->collisionMask(*m_currentPoint);
+    figure_mask = m_currentFigure->collisionMask(
+        m_currentPoint->row, m_currentPoint->col - m_clientRange.colLeft,
+        m_currentPoint->rotating);
     if (m_collisionModel->isCollision(*m_currentPoint, figure_mask)) {
       was_vertical_collizion =
           (m_currentPoint->row - m_previousPoint->row) != 0;
@@ -77,6 +79,14 @@ int GamePlay::exec() {
     if (isElapsedTimeout()) {
       if (was_vertical_collizion) {
         m_collisionModel->appendMask(*m_currentPoint, figure_mask);
+        auto begin_checked_row =
+            m_currentPoint->row - static_cast<int>(figure_mask.size()) - 1;
+        auto removed_rows_count = m_collisionModel->removeFullRows(
+            begin_checked_row, m_currentPoint->row + 1);
+        if (removed_rows_count > 0) {
+          // TODO game_play.cpp: Добавить очков
+          refreshField(m_currentPoint->row);
+        }
         m_currentFigure.reset(nullptr);
 
         if (m_previousPoint->row <= static_cast<int>(figure_mask.size())) {
@@ -145,12 +155,13 @@ void GamePlay::initGeometryParams() {
   if ((m_clientRange.colRight & 0x01) < 1) {
     m_clientRange.colRight--;
   }
+  m_clientRange.width = m_clientRange.colRight - m_clientRange.colLeft - 1;
 }
 
 //------------------------------------------------------------------------------
 void GamePlay::initCollisionModel() {
   m_collisionModel.reset(
-      new CollisionModel(m_clientRange.colRight, m_clientRange.rowBottom));
+      new CollisionModel(m_clientRange.width, m_clientRange.rowBottom));
 }
 
 //------------------------------------------------------------------------------
@@ -211,7 +222,7 @@ void GamePlay::drawHelp() {
 void GamePlay::createFigure() {
   if (m_currentFigure != nullptr) return;
 
-//    m_currentFigure.reset(new tetris::Square);
+  //    m_currentFigure.reset(new tetris::Square);
   m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
   //  m_currentFigure.reset(new tetris::NFigure);
   //  m_currentFigure.reset(new tetris::UFigure);
@@ -232,6 +243,44 @@ bool GamePlay::isElapsedTimeout() {
     return true;
   }
   return false;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::refreshField(int endRow) {
+  static const size_t FULL_LINE_MASK = (size_t(1) << m_clientRange.width) - 1;
+  for (int row(0); row < endRow + 1; ++row) {
+    auto collision_row(m_collisionModel->value(row));
+    /* Строка пустая */
+    if ((collision_row & FULL_LINE_MASK) == 0) {
+      drawFullLine(row, tetris::Figure::EMPTY_SYMBOL);
+      continue;
+    }
+    /* Строка полностью заполнена */
+    if ((collision_row ^ ~0) == 0) {
+      drawFullLine(row, tetris::Figure::FILL_SYMBOL);
+      continue;
+    }
+    /* Остальные случаи */
+    drawLine(row, collision_row);
+  }
+  refresh();
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawFullLine(int row, char symbol) {
+  std::string line(m_clientRange.width, symbol);
+  mvprintw(row, m_clientRange.colLeft + 1, line.c_str());
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawLine(int row, size_t mask) {
+  std::string line(m_clientRange.width, tetris::Figure::EMPTY_SYMBOL);
+  for (int col(0); col < m_clientRange.width; ++col) {
+    if (((mask >> col) & 0x1) > 0) {
+      line[col] = tetris::Figure::FILL_SYMBOL;
+    }
+  }
+  mvprintw(row, m_clientRange.colLeft + 1, line.c_str());
 }
 
 //------------------------------------------------------------------------------
