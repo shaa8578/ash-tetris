@@ -3,13 +3,13 @@
 #include <chrono>
 #include <memory>
 
+#include "figure.h"
+
 //------------------------------------------------------------------------------
 using Clock = std::chrono::system_clock;
 
 //------------------------------------------------------------------------------
 namespace tetris {
-class Figure;
-struct Point;
 
 /** Границы косольной области */
 struct Range {
@@ -53,9 +53,13 @@ class GamePlay {
   void initTimers();
   void drawGameArea();
   void drawHelp();
+  void drawPointsLabel();
+  void drawPointsValue();
 
   void createFigure();
   bool isElapsedTimeout();
+  void appendPoints(int gliphRows);
+  float pointPactor(int gliphRows) const;
   void refreshField(int endRow);
   void drawFullLine(int row, char symbol);
   void drawLine(int row, size_t mask);
@@ -72,12 +76,18 @@ class GamePlay {
   bool m_inited;
   /** Если true, то есть место под панель инструментов */
   bool m_hasToolbox;
-  /** Размеры поля игры */
-  tetris::Range m_clientRange;
+  /** Количество очков за одну удалённую линию */
+  unsigned int m_lineCost;
+  /** Количество игровых очков */
+  unsigned int m_points;
+  /** Точка вставки количества очков */
+  tetris::Point m_pointsPoint;
   /** Шаг сдвига таймера */
   std::chrono::milliseconds m_timerShift;
   /** Время срабатывания таймера */
   Clock::time_point m_timer;
+  /** Размеры поля игры */
+  tetris::Range m_clientRange;
   /** Текущая фигура */
   std::unique_ptr<tetris::Figure> m_currentFigure;
   /** Текущая позиция фигуры */

@@ -7,7 +7,6 @@
 #include <stdexcept>
 
 #include "collision_model.h"
-#include "figure.h"
 #include "figures/line.h"
 #include "figures/n_figure.h"
 #include "figures/square.h"
@@ -18,6 +17,10 @@
 namespace {
 /** Сдвиг по умолчанию таймера перерисовки фигуры, мс */
 static const std::chrono::milliseconds DEFAULT_TIME_SHIFT(1500);
+/** Смещение текста относительно правой границы игрового поля */
+static const auto TEXT_SHIFT = 2;
+/** Отрисовываемый текст набранных очков */
+static const char* POINTS_LABEL_STR = "Points: ";
 
 } /* unnamed namespace */
 //------------------------------------------------------------------------------
@@ -25,6 +28,9 @@ GamePlay::GamePlay()
     : m_working(0x0),
       m_inited(false),
       m_hasToolbox(false),
+      m_lineCost(0),
+      m_points(0),
+      m_pointsPoint(),
       m_timerShift(DEFAULT_TIME_SHIFT) {
   memset(&m_clientRange, 0x0, sizeof(tetris::Range));
 }
@@ -45,6 +51,8 @@ void GamePlay::init() {
 
   drawGameArea();
   drawHelp();
+  drawPointsLabel();
+  drawPointsValue();
   refresh();
 
   m_inited = true;
@@ -64,6 +72,8 @@ int GamePlay::exec() {
   bool was_vertical_collizion(false);
 
   while (m_working) {
+    refresh();
+
     createFigure();
     figure_mask = m_currentFigure->collisionMask(
         m_currentPoint->row, m_currentPoint->col - m_clientRange.colLeft,
@@ -84,7 +94,7 @@ int GamePlay::exec() {
         auto removed_rows_count = m_collisionModel->removeFullRows(
             begin_checked_row, m_currentPoint->row + 1);
         if (removed_rows_count > 0) {
-          // TODO game_play.cpp: Добавить очков
+          appendPoints(removed_rows_count / tetris::Figure::GLYPH_HEIGHT);
           refreshField(m_currentPoint->row);
         }
         m_currentFigure.reset(nullptr);
@@ -156,6 +166,12 @@ void GamePlay::initGeometryParams() {
     m_clientRange.colRight--;
   }
   m_clientRange.width = m_clientRange.colRight - m_clientRange.colLeft - 1;
+
+  m_pointsPoint.row = 1;
+  m_pointsPoint.col =
+      m_clientRange.colRight + TEXT_SHIFT + strlen(POINTS_LABEL_STR);
+
+  m_lineCost = m_clientRange.width / tetris::Figure::GLYPH_WIDTH;
 }
 
 //------------------------------------------------------------------------------
@@ -205,7 +221,6 @@ void GamePlay::drawGameArea() {
 void GamePlay::drawHelp() {
   if (m_hasToolbox == false) return;
 
-  const auto TEXT_SHIFT = 2;
   const auto HOR_LINE_ROW = m_clientRange.rowBottom - 5;
   for (int col_it(m_clientRange.colRight + 1); col_it < COLS; ++col_it) {
     mvaddch(HOR_LINE_ROW, col_it, '-');
@@ -216,6 +231,22 @@ void GamePlay::drawHelp() {
            "Rotate: [Space]");
   mvprintw(m_clientRange.rowBottom - 2, m_clientRange.colRight + TEXT_SHIFT,
            "Exit: [Escape]");
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawPointsLabel() {
+  mvprintw(m_pointsPoint.row, m_clientRange.colRight + TEXT_SHIFT,
+           POINTS_LABEL_STR);
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawPointsValue() {
+  static const int POINTS_FILLER_SIZE = COLS - m_pointsPoint.col;
+  static std::string points_filler(POINTS_FILLER_SIZE,
+                                   tetris::Figure::EMPTY_SYMBOL);
+  mvprintw(m_pointsPoint.row, m_pointsPoint.col, points_filler.c_str());
+  mvprintw(m_pointsPoint.row, m_pointsPoint.col,
+           std::to_string(m_points).c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -246,6 +277,25 @@ bool GamePlay::isElapsedTimeout() {
 }
 
 //------------------------------------------------------------------------------
+void GamePlay::appendPoints(int gliphRows) {
+  m_points += float(gliphRows * m_lineCost) * pointPactor(gliphRows);
+  drawPointsValue();
+}
+
+//------------------------------------------------------------------------------
+float GamePlay::pointPactor(int gliphRows) const {
+  switch (gliphRows) {
+    case 4:
+      return 2.0f;
+    case 3:
+      return 1.5f;
+    default:
+      break;
+  }
+  return 1.0f;
+}
+
+//------------------------------------------------------------------------------
 void GamePlay::refreshField(int endRow) {
   static const size_t FULL_LINE_MASK = (size_t(1) << m_clientRange.width) - 1;
   for (int row(0); row < endRow + 1; ++row) {
@@ -263,7 +313,6 @@ void GamePlay::refreshField(int endRow) {
     /* Остальные случаи */
     drawLine(row, collision_row);
   }
-  refresh();
 }
 
 //------------------------------------------------------------------------------
@@ -297,7 +346,7 @@ void GamePlay::moveFigure() {
     m_currentFigure->clear(*m_previousPoint);
     m_currentFigure->draw(*m_currentPoint);
   }
-  refresh();
+
   *m_previousPoint = *m_currentPoint;
 }
 

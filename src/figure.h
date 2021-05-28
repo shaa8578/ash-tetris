@@ -24,6 +24,13 @@ struct Point {
   int col;
   /** Признак вращения вигуры */
   bool rotating;
+
+  Point() : row(0), col(0), rotating(false) {}
+  Point(int r, int c, bool is_rotating)
+      : row(r), col(c), rotating(is_rotating) {}
+  ~Point() = default;
+  Point(const Point& p) = default;
+  Point& operator=(const Point& p) = default;
 };
 
 //------------------------------------------------------------------------------
