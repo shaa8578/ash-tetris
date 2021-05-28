@@ -60,6 +60,7 @@ class GamePlay {
   bool isElapsedTimeout();
   void appendPoints(int gliphRows);
   float pointPactor(int gliphRows) const;
+  void updateTimerShift();
   void refreshField(int endRow);
   void drawFullLine(int row, char symbol);
   void drawLine(int row, size_t mask);
@@ -78,6 +79,8 @@ class GamePlay {
   bool m_hasToolbox;
   /** Количество очков за одну удалённую линию */
   unsigned int m_lineCost;
+  /** Текущий уровень сложности */
+  unsigned int m_currentLevel;
   /** Количество игровых очков */
   unsigned int m_points;
   /** Точка вставки количества очков */

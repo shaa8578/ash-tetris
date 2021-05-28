@@ -17,6 +17,8 @@
 namespace {
 /** Сдвиг по умолчанию таймера перерисовки фигуры, мс */
 static const std::chrono::milliseconds DEFAULT_TIME_SHIFT(1500);
+/** Минимальное значение таймера перерисовки фигур, ms */
+static const std::chrono::milliseconds MINIMUM_TIMER(200);
 /** Смещение текста относительно правой границы игрового поля */
 static const auto TEXT_SHIFT = 2;
 /** Отрисовываемый текст набранных очков */
@@ -29,6 +31,7 @@ GamePlay::GamePlay()
       m_inited(false),
       m_hasToolbox(false),
       m_lineCost(0),
+      m_currentLevel(0),
       m_points(0),
       m_pointsPoint(),
       m_timerShift(DEFAULT_TIME_SHIFT) {
@@ -96,6 +99,7 @@ int GamePlay::exec() {
         if (removed_rows_count > 0) {
           appendPoints(removed_rows_count / tetris::Figure::GLYPH_HEIGHT);
           refreshField(m_currentPoint->row);
+          updateTimerShift();
         }
         m_currentFigure.reset(nullptr);
 
@@ -293,6 +297,28 @@ float GamePlay::pointPactor(int gliphRows) const {
       break;
   }
   return 1.0f;
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::updateTimerShift() {
+  if (m_points == 0) return;
+
+  if (m_timerShift <= MINIMUM_TIMER) return;
+
+  /** Количество очков для перехода на следующий уровень */
+  static const unsigned int POINTS_FOR_NEXT_LEVEL = 200;
+
+  auto next_level = m_currentLevel + 1;
+
+  int next_points = static_cast<int>(next_level * POINTS_FOR_NEXT_LEVEL);
+  if (static_cast<int>(m_points) - next_points >= 0) {
+    /** Шаг уменьшения смещения, мс */
+    static const std::chrono::milliseconds TIME_SHIFT_STEP(100);
+    m_timerShift -= TIME_SHIFT_STEP;
+    if (m_timerShift < MINIMUM_TIMER) {
+      m_timerShift = MINIMUM_TIMER;
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
