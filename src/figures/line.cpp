@@ -7,11 +7,6 @@ tetris::Line::Line(tetris::FigureExt::Orientation orientation)
     : FigureExt(orientation) {}
 
 //------------------------------------------------------------------------------
-int tetris::Line::width() const {
-  return currentSize().width;
-}
-
-//------------------------------------------------------------------------------
 std::vector<size_t> tetris::Line::collisionMask(int row, int col,
                                                 bool rotating) const {
   auto result_orientation = (rotating) ? nextOrientation() : orientation();
