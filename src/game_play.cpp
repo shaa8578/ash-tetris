@@ -258,10 +258,10 @@ void GamePlay::createFigure() {
   if (m_currentFigure != nullptr) return;
 
   //    m_currentFigure.reset(new tetris::Square);
-  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
+  //  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
   //  m_currentFigure.reset(new tetris::NFigure);
   //  m_currentFigure.reset(new tetris::UFigure);
-  //  m_currentFigure.reset(new tetris::TFigure);
+  m_currentFigure.reset(new tetris::TFigure);
   auto col = (m_clientRange.colRight - m_clientRange.colLeft) / 2 -
              m_currentFigure->width() / 2;
   if ((col & 0x01) < 1) {

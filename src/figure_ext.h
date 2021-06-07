@@ -24,6 +24,7 @@ class FigureExt : public Figure {
   };
 
   explicit FigureExt(Orientation orientation = HORIZONTAL);
+  virtual int width() const override;
 
  protected:
   virtual int defaultWidth() const = 0;
@@ -31,7 +32,7 @@ class FigureExt : public Figure {
 
   const Size& currentSize() const;
   int topRange(int row);
-  void throwInvalidOrientation() const;
+  static void throwInvalidOrientation(Orientation errOrientation);
   virtual void rotateGeometry() override;
 
   Orientation orientation() const { return m_orientation; }

@@ -9,6 +9,11 @@ tetris::FigureExt::FigureExt(Orientation orientation)
     : Figure(), m_orientation(orientation), m_currentSize(nullptr) {}
 
 //------------------------------------------------------------------------------
+int tetris::FigureExt::width() const {
+  return currentSize().width;
+}
+
+//------------------------------------------------------------------------------
 const tetris::Size& tetris::FigureExt::currentSize() const {
   if (m_currentSize == nullptr) {
     auto current_size = const_cast<PtrSize*>(&m_currentSize);
@@ -30,9 +35,9 @@ int tetris::FigureExt::topRange(int row) {
 }
 
 //------------------------------------------------------------------------------
-void tetris::FigureExt::throwInvalidOrientation() const {
+void tetris::FigureExt::throwInvalidOrientation(Orientation errOrientation) {
   throw std::invalid_argument("Orientation \"" +
-                              std::to_string(static_cast<int>(m_orientation)) +
+                              std::to_string(static_cast<int>(errOrientation)) +
                               "\" not implemented");
 }
 
@@ -71,6 +76,6 @@ void tetris::FigureExt::fillCurrentSize(Size* fillingSize) const {
       fillingSize->height = defaultWidth();
       break;
     default:
-      throwInvalidOrientation();
+      throwInvalidOrientation(m_orientation);
   }
 }

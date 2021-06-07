@@ -11,7 +11,6 @@ class Line : public FigureExt {
  public:
   explicit Line(Orientation orientation = HORIZONTAL);
 
-  virtual int width() const override;
   virtual std::vector<size_t> collisionMask(int row, int col,
                                             bool rotating) const override;
 

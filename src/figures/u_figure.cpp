@@ -36,3 +36,69 @@ void tetris::UFigure::drawVertical(const tetris::Point& pivotPoint,
   for (int row_it(row - GLYPH_WIDTH); row_it > top; --row_it)
     mvprintw(row_it, col, line.c_str());
 }
+
+//------------------------------------------------------------------------------
+std::vector<size_t> tetris::UFigure::collisionMaskHorizontal(int row,
+                                                             int col) const {
+  static const int ORIENTATION_HEIGHT = 2 * Figure::GLYPH_HEIGHT;
+  static const int ORIENTATION_WIDTH = 2 * Figure::GLYPH_WIDTH;
+  int mask_size = (row - ORIENTATION_HEIGHT < 0) ? row : ORIENTATION_HEIGHT;
+  if (mask_size == 0) ++mask_size;
+
+  std::vector<size_t> result;
+  switch (mask_size) {
+    case 4:
+      result.push_back(((size_t(1) << ORIENTATION_WIDTH) - 1)
+                       << (col - 1 + Figure::GLYPH_WIDTH));
+      /* FALLTHRU */
+    case 3:
+      result.push_back(((size_t(1) << ORIENTATION_WIDTH) - 1)
+                       << (col - 1 + Figure::GLYPH_WIDTH));
+      /* FALLTHRU */
+    case 2:
+      result.push_back(((size_t(1) << ORIENTATION_WIDTH) - 1) << (col - 1));
+      /* FALLTHRU */
+    case 1:
+      result.push_back(((size_t(1) << ORIENTATION_WIDTH) - 1) << (col - 1));
+      break;
+    default:
+      break;
+  }
+  return result;
+}
+
+std::vector<size_t> tetris::UFigure::collisionMaskVertical(int row,
+                                                           int col) const {
+  static const int ORIENTATION_HEIGHT = 3 * Figure::GLYPH_HEIGHT;
+  int mask_size = (row - ORIENTATION_HEIGHT < 0) ? row : ORIENTATION_HEIGHT;
+  if (mask_size == 0) ++mask_size;
+
+  std::vector<size_t> result;
+  switch (mask_size) {
+    case 6:
+      result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
+      /* FALLTHRU */
+    case 5:
+      result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
+      /* FALLTHRU */
+    case 4:
+      result.push_back(((size_t(1) << (2 * Figure::GLYPH_WIDTH)) - 1)
+                       << (col - 1));
+      /* FALLTHRU */
+    case 3:
+      result.push_back(((size_t(1) << (2 * Figure::GLYPH_WIDTH)) - 1)
+                       << (col - 1));
+      /* FALLTHRU */
+    case 2:
+      result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1)
+                       << (col - 1 + Figure::GLYPH_WIDTH));
+      /* FALLTHRU */
+    case 1:
+      result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1)
+                       << (col - 1 + Figure::GLYPH_WIDTH));
+      break;
+    default:
+      break;
+  }
+  return result;
+}
