@@ -56,6 +56,11 @@ class GamePlay {
   void drawPointsLabel();
   void drawPointsValue();
 
+  void createNextFigure();
+  void drawNextFigureLabel();
+  void drawNextFigure();
+  void clearNextFigure();
+
   void createFigure();
   bool isElapsedTimeout();
   void appendPoints(int gliphRows);
@@ -85,14 +90,18 @@ class GamePlay {
   unsigned int m_points;
   /** Точка вставки количества очков */
   tetris::Point m_pointsPoint;
+  /** Точка вставки следующей фигуры */
+  tetris::Point m_nextFigurePoint;
   /** Шаг сдвига таймера */
   std::chrono::milliseconds m_timerShift;
   /** Время срабатывания таймера */
   Clock::time_point m_timer;
   /** Размеры поля игры */
   tetris::Range m_clientRange;
+  /** Следующая фигура */
+  std::shared_ptr<tetris::Figure> m_nextFigure;
   /** Текущая фигура */
-  std::unique_ptr<tetris::Figure> m_currentFigure;
+  std::shared_ptr<tetris::Figure> m_currentFigure;
   /** Текущая позиция фигуры */
   std::unique_ptr<tetris::Point> m_currentPoint;
   /** Предыдущая позиция фигуры */

@@ -80,6 +80,10 @@ target_compile_options(${PROJECT_LABEL} PRIVATE
   # -save-temps
 )
 
+target_compile_definitions(${PROJECT_LABEL} PRIVATE
+  $<$<NOT:$<CONFIG:Debug>>:USING_SRAND>
+)
+
 target_include_directories(${PROJECT_LABEL} PRIVATE src)
 
 target_link_libraries(${PROJECT_LABEL} PRIVATE ${CURSES_LIBRARIES})

@@ -3,6 +3,7 @@
 #include <curses.h>
 #include <stddef.h>
 
+#include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 
@@ -23,6 +24,8 @@ static const std::chrono::milliseconds MINIMUM_TIMER(200);
 static const auto TEXT_SHIFT = 2;
 /** Отрисовываемый текст набранных очков */
 static const char* POINTS_LABEL_STR = "Points: ";
+/** Подпись следующей фигуры */
+static const char* NEXT_FIGURE_LABEL_STR = "Next: ";
 
 } /* unnamed namespace */
 //------------------------------------------------------------------------------
@@ -34,6 +37,7 @@ GamePlay::GamePlay()
       m_currentLevel(0),
       m_points(0),
       m_pointsPoint(),
+      m_nextFigurePoint(),
       m_timerShift(DEFAULT_TIME_SHIFT) {
   memset(&m_clientRange, 0x0, sizeof(tetris::Range));
 }
@@ -56,6 +60,11 @@ void GamePlay::init() {
   drawHelp();
   drawPointsLabel();
   drawPointsValue();
+
+  createNextFigure();
+  drawNextFigureLabel();
+  drawNextFigure();
+
   refresh();
 
   m_inited = true;
@@ -101,7 +110,7 @@ int GamePlay::exec() {
           refreshField(m_currentPoint->row);
           updateTimerShift();
         }
-        m_currentFigure.reset(nullptr);
+        m_currentFigure.reset();
 
         if (m_previousPoint->row <= static_cast<int>(figure_mask.size())) {
           break;
@@ -174,6 +183,10 @@ void GamePlay::initGeometryParams() {
   m_pointsPoint.row = 1;
   m_pointsPoint.col =
       m_clientRange.colRight + TEXT_SHIFT + strlen(POINTS_LABEL_STR);
+
+  m_nextFigurePoint.row = 3 + 4 * tetris::Figure::GLYPH_HEIGHT;
+  m_nextFigurePoint.col =
+      m_clientRange.colRight + TEXT_SHIFT + strlen(NEXT_FIGURE_LABEL_STR);
 
   m_lineCost = m_clientRange.width / tetris::Figure::GLYPH_WIDTH;
 }
@@ -254,16 +267,99 @@ void GamePlay::drawPointsValue() {
 }
 
 //------------------------------------------------------------------------------
+void GamePlay::createNextFigure() {
+  int figure_id(0);
+  /** Исключаем повторение предыдущей фигуры */
+  static int last_figure_id(-1);
+  do {
+    figure_id = std::rand() % 15;
+  } while (figure_id == last_figure_id);
+  last_figure_id = figure_id;
+
+  switch (figure_id) {
+    case 1:
+      m_nextFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
+      break;
+    case 2:
+      m_nextFigure.reset(new tetris::Line(tetris::FigureExt::HORIZONTAL));
+      break;
+    case 3:
+      m_nextFigure.reset(new tetris::NFigure(tetris::FigureExt::HORIZONTAL));
+      break;
+    case 4:
+      m_nextFigure.reset(new tetris::NFigure(tetris::FigureExt::VERTICAL));
+      break;
+    case 5:
+      m_nextFigure.reset(
+          new tetris::NFigure(tetris::FigureExt::HORIZONTAL_INVERT));
+      break;
+    case 6:
+      m_nextFigure.reset(
+          new tetris::NFigure(tetris::FigureExt::VERTICAL_INVERT));
+      break;
+    case 7:
+      m_nextFigure.reset(new tetris::UFigure(tetris::FigureExt::HORIZONTAL));
+      break;
+    case 8:
+      m_nextFigure.reset(new tetris::UFigure(tetris::FigureExt::VERTICAL));
+      break;
+    case 9:
+      m_nextFigure.reset(
+          new tetris::UFigure(tetris::FigureExt::HORIZONTAL_INVERT));
+      break;
+    case 10:
+      m_nextFigure.reset(
+          new tetris::UFigure(tetris::FigureExt::VERTICAL_INVERT));
+      break;
+    case 11:
+      m_nextFigure.reset(new tetris::TFigure(tetris::FigureExt::HORIZONTAL));
+      break;
+    case 12:
+      m_nextFigure.reset(new tetris::TFigure(tetris::FigureExt::VERTICAL));
+      break;
+    case 13:
+      m_nextFigure.reset(
+          new tetris::TFigure(tetris::FigureExt::HORIZONTAL_INVERT));
+      break;
+    case 14:
+      m_nextFigure.reset(
+          new tetris::TFigure(tetris::FigureExt::VERTICAL_INVERT));
+      break;
+    case 0:
+    default:
+      m_nextFigure.reset(new tetris::Square);
+      break;
+  }
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawNextFigureLabel() {
+  mvprintw(m_nextFigurePoint.row, m_clientRange.colRight + TEXT_SHIFT,
+           NEXT_FIGURE_LABEL_STR);
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::drawNextFigure() {
+  m_nextFigure->draw(m_nextFigurePoint);
+}
+
+//------------------------------------------------------------------------------
+void GamePlay::clearNextFigure() {
+  m_nextFigure->clear(m_nextFigurePoint);
+}
+
+//------------------------------------------------------------------------------
 void GamePlay::createFigure() {
   if (m_currentFigure != nullptr) return;
 
-  //    m_currentFigure.reset(new tetris::Square);
-  //  m_currentFigure.reset(new tetris::Line(tetris::FigureExt::VERTICAL));
-  //  m_currentFigure.reset(new tetris::NFigure);
-  //  m_currentFigure.reset(new tetris::UFigure);
-  m_currentFigure.reset(new tetris::TFigure);
-  auto col = (m_clientRange.colRight - m_clientRange.colLeft) / 2 -
-             m_currentFigure->width() / 2;
+  clearNextFigure();
+  m_currentFigure = m_nextFigure;
+  createNextFigure();
+  drawNextFigure();
+
+  static const int CLIENT_AREA_CENTER =
+      (m_clientRange.colRight - m_clientRange.colLeft) / 2;
+  auto col = CLIENT_AREA_CENTER - m_currentFigure->width() / 2;
   if ((col & 0x01) < 1) {
     col--;
   }

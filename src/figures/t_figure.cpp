@@ -11,7 +11,6 @@ tetris::TFigure::TFigure(Orientation orientation) : FigureExt(orientation) {}
 //------------------------------------------------------------------------------
 std::vector<size_t> tetris::TFigure::collisionMask(int row, int col,
                                                    bool rotating) const {
-  // TODO t_figure.cpp: collisionMask()
   auto figure_orientation = (rotating) ? nextOrientation() : orientation();
   std::vector<size_t> mask;
   switch (figure_orientation) {

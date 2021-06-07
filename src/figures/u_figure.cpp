@@ -5,7 +5,7 @@
 #include <string>
 
 //------------------------------------------------------------------------------
-tetris::UFigure::UFigure() : NFigure() {}
+tetris::UFigure::UFigure(Orientation orientation) : NFigure(orientation) {}
 
 //------------------------------------------------------------------------------
 void tetris::UFigure::drawHorizontal(const tetris::Point& pivotPoint,
