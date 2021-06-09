@@ -17,7 +17,7 @@ namespace tetris {
  */
 class UFigure : public NFigure {
  public:
-  UFigure();
+  explicit UFigure(Orientation orientation = HORIZONTAL);
 
  protected:
   virtual void drawHorizontal(const Point& pivotPoint, char symbol) override;

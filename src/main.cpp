@@ -6,6 +6,10 @@
 #include <iostream>
 #include <stdexcept>
 
+#if defined(USING_SRAND)
+#include <ctime>
+#endif /* USING_SRAND */
+
 #include "game_play.h"
 
 //------------------------------------------------------------------------------
@@ -24,6 +28,10 @@ int main(/*int argc, char* argv[]*/) {
 
   std::set_unexpected(createUnexpectException);
   std::set_terminate(abortByThrowing);
+
+#if defined(USING_SRAND)
+  srand(time(0));
+#endif /* USING_SRAND */
 
   try {
     initOsSignals();
