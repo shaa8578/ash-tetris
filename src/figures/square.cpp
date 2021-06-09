@@ -31,7 +31,7 @@ std::vector<size_t> tetris::Square::collisionMask(int row, int col,
   std::vector<size_t> result(current_size, 0UL);
   result.reserve(current_size);
   for (; first_row < current_size; ++first_row) {
-    result[first_row] = ((size_t(SQUARE_SIZE.width) << 2) - 1) << col;
+    result[first_row] = ((size_t(1) << SQUARE_SIZE.width) - 1) << (col - 1);
   }
   return result;
 }
