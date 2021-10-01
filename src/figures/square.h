@@ -14,15 +14,13 @@ class Square : public Figure {
  public:
   Square();
 
-  virtual int width() const override;
-  virtual std::vector<size_t> collisionMask(int row, int col,
-                                            bool) const override;
+  int width() const override;
+  std::vector<size_t> collisionMask(int row, int col, bool) const override;
 
  protected:
-  virtual void draw(const Point& pivotPoint, char symbol) override;
-  virtual void rotateGeometry() override {}
-
-  static int topRange(int row);
+  const Size& currentSize() const override;
+  void rotateGeometry() override {}
+  int topRange(int row) override;
 };
 
 //------------------------------------------------------------------------------

@@ -37,15 +37,6 @@ int tetris::Line::defaultHeight() const {
 }
 
 //------------------------------------------------------------------------------
-void tetris::Line::draw(const Point& pivotPoint, char symbol) {
-  const std::string line(currentSize().width, symbol);
-  const int top = topRange(pivotPoint.row);
-  for (int row_it(pivotPoint.row); row_it > top; --row_it) {
-    mvprintw(row_it, pivotPoint.col, line.c_str());
-  }
-}
-
-//------------------------------------------------------------------------------
 std::vector<size_t> tetris::Line::collisionMask(int row, int col,
                                                 int orientationWidth,
                                                 int orientationHeight) const {

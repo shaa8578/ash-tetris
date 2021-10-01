@@ -11,14 +11,12 @@ class Line : public FigureExt {
  public:
   explicit Line(Orientation orientation = HORIZONTAL);
 
-  virtual std::vector<size_t> collisionMask(int row, int col,
-                                            bool rotating) const override;
+  std::vector<size_t> collisionMask(int row, int col,
+                                    bool rotating) const override;
 
  protected:
-  virtual int defaultWidth() const override;
-  virtual int defaultHeight() const override;
-
-  virtual void draw(const Point& pivotPoint, char symbol) override;
+  int defaultWidth() const override;
+  int defaultHeight() const override;
 
  private:
   std::vector<size_t> collisionMask(int row, int col, int orientationWidth,

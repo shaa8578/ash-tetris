@@ -6,7 +6,7 @@
 #include <string>
 
 //------------------------------------------------------------------------------
-tetris::TFigure::TFigure(Orientation orientation) : FigureExt(orientation) {}
+tetris::TFigure::TFigure(Orientation orientation) : NFigure(orientation) {}
 
 //------------------------------------------------------------------------------
 std::vector<size_t> tetris::TFigure::collisionMask(int row, int col,
@@ -15,13 +15,13 @@ std::vector<size_t> tetris::TFigure::collisionMask(int row, int col,
   std::vector<size_t> mask;
   switch (figure_orientation) {
     case tetris::FigureExt::HORIZONTAL:
-      mask = collisionMaskHorizontal(col);
+      mask = collisionMaskHorizontal(/* row = unused */ 0, col);
       break;
     case tetris::FigureExt::HORIZONTAL_INVERT:
       mask = collisionMaskHorizontalInvert(col);
       break;
     case tetris::FigureExt::VERTICAL:
-      mask = collisionMaskVertical(col);
+      mask = collisionMaskVertical(/* row = unused */ 0, col);
       break;
     case tetris::FigureExt::VERTICAL_INVERT:
       mask = collisionMaskVerticalInvert(col);
@@ -51,23 +51,6 @@ int tetris::TFigure::defaultWidth() const {
 //------------------------------------------------------------------------------
 int tetris::TFigure::defaultHeight() const {
   return 2 * GLYPH_HEIGHT;
-}
-
-//------------------------------------------------------------------------------
-void tetris::TFigure::draw(const tetris::Point& pivotPoint, const char symbol) {
-  switch (orientation()) {
-    case HORIZONTAL:
-    case HORIZONTAL_INVERT:
-      drawHorizontal(pivotPoint, symbol);
-      break;
-    case VERTICAL:
-    case VERTICAL_INVERT:
-      drawVertical(pivotPoint, symbol);
-      break;
-    default:
-      throwInvalidOrientation(orientation());
-      break;
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -117,7 +100,8 @@ void tetris::TFigure::drawVertical(const tetris::Point& pivotPoint,
 }
 
 //------------------------------------------------------------------------------
-std::vector<size_t> tetris::TFigure::collisionMaskHorizontal(int col) const {
+std::vector<size_t> tetris::TFigure::collisionMaskHorizontal(int,
+                                                             int col) const {
   std::vector<size_t> result;
   result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1)
                    << (col - 1 + Figure::GLYPH_WIDTH));
@@ -125,6 +109,18 @@ std::vector<size_t> tetris::TFigure::collisionMaskHorizontal(int col) const {
                    << (col - 1 + Figure::GLYPH_WIDTH));
   result.push_back(((size_t(1) << defaultWidth()) - 1) << (col - 1));
   result.push_back(((size_t(1) << defaultWidth()) - 1) << (col - 1));
+  return result;
+}
+
+//------------------------------------------------------------------------------
+std::vector<size_t> tetris::TFigure::collisionMaskVertical(int, int col) const {
+  std::vector<size_t> result;
+  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
+  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
+  result.push_back(((size_t(1) << defaultHeight()) - 1) << (col - 1));
+  result.push_back(((size_t(1) << defaultHeight()) - 1) << (col - 1));
+  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
+  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
   return result;
 }
 
@@ -138,18 +134,6 @@ std::vector<size_t> tetris::TFigure::collisionMaskHorizontalInvert(
                    << (col - 1 + Figure::GLYPH_WIDTH));
   result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1)
                    << (col - 1 + Figure::GLYPH_WIDTH));
-  return result;
-}
-
-//------------------------------------------------------------------------------
-std::vector<size_t> tetris::TFigure::collisionMaskVertical(int col) const {
-  std::vector<size_t> result;
-  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
-  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
-  result.push_back(((size_t(1) << defaultHeight()) - 1) << (col - 1));
-  result.push_back(((size_t(1) << defaultHeight()) - 1) << (col - 1));
-  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
-  result.push_back(((size_t(1) << Figure::GLYPH_WIDTH) - 1) << (col - 1));
   return result;
 }
 

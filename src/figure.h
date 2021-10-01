@@ -58,8 +58,10 @@ class Figure {
   void rotate(const Point& pivotPoint);
 
  protected:
-  virtual void draw(const Point& pivotPoint, char symbol) = 0;
+  virtual const Size& currentSize() const = 0;
   virtual void rotateGeometry() = 0;
+  virtual int topRange(int row) = 0;
+  virtual void draw(const Point& pivotPoint, char symbol);
 };
 
 //------------------------------------------------------------------------------

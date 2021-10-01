@@ -1,6 +1,6 @@
 #pragma once
 
-#include "figure_ext.h"
+#include "n_figure.h"
 
 //------------------------------------------------------------------------------
 namespace tetris {
@@ -15,23 +15,24 @@ namespace tetris {
  * xxxxxx | xx   |   xx   |   xx
  * xxxxxx | xx   |   xx   |   xx
  */
-class TFigure : public FigureExt {
+class TFigure : public NFigure {
  public:
   explicit TFigure(Orientation orientation = HORIZONTAL);
 
-  virtual std::vector<size_t> collisionMask(int row, int col,
-                                            bool rotating) const override;
+  std::vector<size_t> collisionMask(int row, int col,
+                                    bool rotating) const override;
 
  protected:
-  virtual int defaultWidth() const override;
-  virtual int defaultHeight() const override;
+  int defaultWidth() const override;
+  int defaultHeight() const override;
 
-  virtual void draw(const Point& pivotPoint, char symbol) override;
-  void drawHorizontal(const Point& pivotPoint, char symbol);
-  void drawVertical(const Point& pivotPoint, char symbol);
-  std::vector<size_t> collisionMaskHorizontal(int col) const;
+  void drawHorizontal(const Point& pivotPoint, char symbol) override;
+  void drawVertical(const Point& pivotPoint, char symbol) override;
+  std::vector<size_t> collisionMaskHorizontal(int /*row*/,
+                                              int col) const override;
+  std::vector<size_t> collisionMaskVertical(int /*row*/,
+                                            int col) const override;
   std::vector<size_t> collisionMaskHorizontalInvert(int col) const;
-  std::vector<size_t> collisionMaskVertical(int col) const;
   std::vector<size_t> collisionMaskVerticalInvert(int col) const;
   Size figureSize(Orientation figureOrientation) const;
 };
