@@ -37,12 +37,8 @@ std::vector<size_t> tetris::Square::collisionMask(int row, int col,
 }
 
 //------------------------------------------------------------------------------
-void tetris::Square::draw(const tetris::Point& pivotPoint, char symbol) {
-  const std::string line(SQUARE_SIZE.width, symbol);
-  const int top = topRange(pivotPoint.row);
-  for (int row_it(pivotPoint.row); row_it > top; --row_it) {
-    mvprintw(row_it, pivotPoint.col, line.c_str());
-  }
+const tetris::Size& tetris::Square::currentSize() const {
+  return SQUARE_SIZE;
 }
 
 //------------------------------------------------------------------------------
